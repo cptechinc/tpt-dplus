@@ -5,15 +5,28 @@
 	$config_picking   = $modules->get('ConfigsWarehousePicking');
 	$http = new ProcessWire\WireHttp();
 
-	$template = file_exists(__DIR__."/whse-picking-$config->company.php") ? "whse-picking-$config->company" : 'whse-picking-unguided';
+	$template = '';
 
-	$action = 'start-pick-unguided';
+	switch ($config_picking->picking_method) {
+		case 'guided':
+			$template = 'whse-picking-guided';
+			break;
+		case 'unguided';
+			$template = 'whse-picking-unguided';
+			break;
+	}
+	switch ($config_picking->picking_method) {
+		case 'guided':
+			$action = 'start-pick';
+			break;
+		case 'unguided';
+			$action = 'start-pick-unguided';
+			break;
+	}
 
 	// CHECK If Sales Order is Provided
 	if ($input->get->ordn) {
-
 		$ordn = SalesOrder::get_paddedordernumber($input->get->text('ordn'));
-		$page->title = "Picking Order # $ordn";
 		$pickorder = PickSalesOrderQuery::create()->findOneByOrdernbr($ordn);
 
 		if ($config_picking->picking_method == 'unguided') {
@@ -47,8 +60,7 @@
 			include __DIR__ . "/$template.php";
 		}
 	} else {
-		// TODO::
-		// $http->get("127.0.0.1".$page->parent->child('template=redir')->url."?action=$action&sessionID=".session_id());
+		$http->get("127.0.0.1".$page->parent->child('template=redir')->url."?action=$action&sessionID=".session_id());
 		$page->formurl = $page->parent->child('template=redir')->url;
 		$page->body = $config->twig->render('warehouse/picking/sales-order-form.twig', ['page' => $page]);
 	}

@@ -1,4 +1,3 @@
-{{ json|json_encode()|raw }}
 {% if json['data'] %}
 	{% for id, warehouse in json['data'] %}
 		<div class="row">

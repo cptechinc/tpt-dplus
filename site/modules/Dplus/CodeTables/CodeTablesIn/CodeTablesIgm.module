@@ -66,12 +66,15 @@ class CodeTablesIgm extends WireData implements Module {
 	 * Takes Input, validates it's for one of the code tables
 	 * Processes it, and if updated sends request to dplus
 	 *
+	 * NOTE: If an existing code is more than ItemGroupCode::MAX_LENGTH_CODE, we will allow editing
+	 * but we won't allow creation of a code with more than allowed characters we will trim it.
+	 *
 	 * @param  WireInput $input Input
 	 * @return void
 	 */
 	public function process_input(WireInput $input) {
 		$config_so = ConfigSalesOrderQuery::create()->findOne();
-		$config_ar = ConfigArQuery::create()->findOne();
+        $config_ar = ConfigArQuery::create()->findOne();
 		$rm = strtolower($input->requestMethod());
 		$table = $input->$rm->text('table');
 		$code  = $input->$rm->text('code');
@@ -82,6 +85,7 @@ class CodeTablesIgm extends WireData implements Module {
 		if ($q->count()) {
 			$record = $q->findOne();
 		} else {
+			$code  = $input->$rm->text('code', array('maxLength' => ItemGroupCode::MAX_LENGTH_CODE));
 			$record = new ItemGroupCode();
 			$record->setCode($code);
 		}
@@ -120,10 +124,11 @@ class CodeTablesIgm extends WireData implements Module {
 			$record->setProduct_line($product_line);
 			$record->setEcomm_desc($ecomm_desc);
 			$record->setDate(date('Ymd'));
-			$record->setTime(0);
+			$record->setTime(date('His'));
+			$record->setDummy('P');
 
 			// TODO: show if company == Alumacraft as well
-			if ($config_ar->is_web_group()) {
+            if ($config_ar->is_web_group()) {
 				$web_group = $input->$rm->text('web_group');
 				$record->setWeb_group($web_group);
 			}

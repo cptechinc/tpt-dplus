@@ -2,8 +2,6 @@
 
 use Purl\Url;
 
-include(__DIR__.'/Dpages.module');
-
 /**
  * class DpagesMci
  *

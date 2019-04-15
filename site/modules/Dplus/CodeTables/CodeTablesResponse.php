@@ -72,4 +72,5 @@ class CodeTablesResponse  {
 			return false;
 		}
 	}
+
 }
