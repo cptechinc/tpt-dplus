@@ -1,6 +1,6 @@
 <?php
 	require_once('./DplusConnectDatabase.module');
-
+	
 	class DplusOnlineDatabase extends DplusConnectDatabase implements ConfigurableModule {
 		protected $connection_name = 'dplusodb';
 
@@ -19,11 +19,11 @@
 
 		static public function getDefaultConfig() {
 			return array(
-				'db_name' => 'dpluso2',
-				'db_host' => '',
+				'db_name' => 'dpluso',
+				'db_host' => '192.168.1.2',
 				'db_user' => 'cptecomm',
 				'db_pass' => 'rghopeless',
-				'db_port' => '',
+				'db_port' => '3306',
 			);
 		}
 
