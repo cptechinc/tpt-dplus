@@ -1,21 +1,17 @@
 <?php namespace ProcessWire;
 
 /**
- * Class for formatting the CI Sales History Screen
+ * Class for formatting the CI Payments Screen
  */
-class CiSalesHistory extends ScreenFormatter implements Module {
-	protected $code = 'ci-sales-history';
+class SfCiPayments extends ScreenFormatter implements Module {
+	protected $code = 'ci-payments';
 
 	/**
 	 * Key Value array of Sections that exist I.E. header => Header, detail => Detail
 	 * @var string
 	 */
 	protected $datasections = array(
-		"header" => "Header",
-		"detail" => "Detail",
-		"lotserial" => "Lot / Serial",
-		"total" => "Totals",
-		"shipments" => "Shipments"
+		"detail" => "Detail"
 	);
 
 /* =============================================================
@@ -28,11 +24,12 @@ class CiSalesHistory extends ScreenFormatter implements Module {
 	 */
 	public static function getModuleInfo() {
 		return array(
-			'title' => 'Dpluso CI Sales History Formatter Module',
+			'title' => 'Dpluso CI Payments Formatter Module',
 			'version' => 101,
-			'summary' => 'Handles CI Sales History Formatter',
+			'summary' => 'Handles CI Payments Formatter',
 			'singular' => true,
-			'autoload' => true,
+			'autoload' => false,
+			'requires' => 'ScreenFormatter'
 		);
 	}
 }
