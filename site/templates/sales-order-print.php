@@ -41,6 +41,7 @@
 	} else {
 		$page->body = $config->twig->render('sales-orders/sales-order-lookup.twig', ['page' => $page]);
 	}
+
 	$pdfmaker = $modules->get('PdfMaker');
 	$pdfmaker->set_fileID("order-$order->ordernumber");
 	$pdfmaker->set_filetype('order');
@@ -56,15 +57,16 @@
 		$pdfmaker->set_url($page->get_printpdfURL());
 		$pdfmaker->generate_pdf();
 	} else {
-		if ($page->print) {
-			$page->show_title = true;
 
-			if ($page->is_pdf()) {
-				$page->show_title = false;
-			}
+	}
 
-			include __DIR__ . "/blank-page.php";
-		} else {
-			include __DIR__ . "/basic-page.php";
+	if ($page->print) {
+		$page->show_title = true;
+
+		if ($page->is_pdf()) {
+			$page->show_title = false;
 		}
+		include __DIR__ . "/blank-page.php";
+	} else {
+		include __DIR__ . "/basic-page.php";
 	}
