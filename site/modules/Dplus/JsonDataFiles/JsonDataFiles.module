@@ -145,9 +145,7 @@
 		 * @return bool              Does File Exist
 		 */
 		public function file_exists($sessionID, $jsoncode) {
-			$basefile = $this->get_filename($jsoncode);
-			$filepath = $this->wire('config')->jsonfilepath;
-			$jsonfile = $filepath."$sessionID-$basefile.json";
+			$jsonfile = $this->get_filepath($sessionID, $jsoncode);
 			return file_exists($jsonfile);
 		}
 
@@ -159,9 +157,7 @@
 		 * @return bool              Was File Removed
 		 */
 		public function remove_file($sessionID, $jsoncode) {
-			$basefile = $this->get_filename($jsoncode);
-			$filepath = $this->wire('config')->jsonfilepath;
-			$jsonfile = $filepath."$sessionID-$basefile.json";
+			$jsonfile = $this->get_filepath($sessionID, $jsoncode);
 			return unlink($jsonfile);
 		}
 
@@ -173,10 +169,14 @@
 		 * @return bool              Date Time of when Json file was modified
 		 */
 		public function file_modified($sessionID, $jsoncode) {
+			$jsonfile = $this->get_filepath($sessionID, $jsoncode);
+			return filemtime($jsonfile);
+		}
+
+		public function get_filepath($sessionID, $jsoncode) {
 			$basefile = $this->get_filename($jsoncode);
 			$filepath = $this->wire('config')->jsonfilepath;
-			$jsonfile = $filepath."$sessionID-$basefile.json";
-			return filemtime($jsonfile);
+			return $filepath."$sessionID-$basefile.json";
 		}
 
 		/**
