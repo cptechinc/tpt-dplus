@@ -40,6 +40,10 @@ class ScreenFormatter extends WireData implements Module {
 	 */
 	protected $userID;
 
+	/**
+	 * Screen Formatter Code
+	 * @var string
+	 */
 	protected $code = '';
 
 	/**
@@ -47,7 +51,6 @@ class ScreenFormatter extends WireData implements Module {
 	 * @var string
 	 */
 	protected $datasections = array();
-
 
 	const COLUMNS_TRACKING = array('Tracking Number');
 
@@ -192,6 +195,10 @@ class ScreenFormatter extends WireData implements Module {
 		return $this->datasections;
 	}
 
+	/**
+	 * Returns Source of Formatter
+	 * @return string
+	 */
 	public function get_source() {
 		return $this->source;
 	}
