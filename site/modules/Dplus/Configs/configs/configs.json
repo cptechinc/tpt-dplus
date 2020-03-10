@@ -1,0 +1,47 @@
+{
+    "configs": {
+        "ConfigsCi": [],
+        "ConfigsIi": [],
+        "ConfigsSalesOrders": [],
+        "ConfigsWarehouseInventory": [],
+        "ConfigsBinr": [],
+        "ConfigsWarehouseLabelPrinting": [],
+        "ConfigsWarehousePicking": {
+            "picking_method": "unguided",
+            "use_singleunitqty": 1
+        },
+        "DplusConnectDatabase": {
+            "db_name": "data2",
+            "db_host": "localhost",
+            "db_user": "cptecomm",
+            "db_pass": "rghopeless",
+            "db_port": "3306"
+        },
+        "DplusOnlineDatabase": {
+            "db_name": "dpluso2",
+            "db_host": "localhost",
+            "db_user": "cptecomm",
+            "db_pass": "rghopeless",
+            "db_port": "3306"
+        },
+        "FilterUserActions": {
+            "allow_viewotheractions": ""
+        },
+        "FilterBookings": {
+            "option_bookings_dashboard": 1,
+            "option_bookings_customer": 1
+        }
+    },
+    "config-file": {
+        "company": "tpt",
+        "companynbr": 2
+    },
+    "config-customer": {
+        "company_name": "Trans-Pacific Textiles",
+        "address": "<address>8628 Eagle Creek Circle<br \/>\nSavage, MN 55378<br \/>\n952-888-1888<\/address>",
+        "images": {
+            "logo_large": "tpt.jpg",
+            "logo_small": false
+        }
+    }
+}

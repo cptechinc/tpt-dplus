@@ -111,7 +111,15 @@ class DpagesMci extends Dpages implements Module {
 		'ci-customer-phonebook' => array(
 			'name'   => 'ci-customer-phonebook',
 			'fields' => array(),
-		)
+		),
+		'ci-activity' => array(
+			'name'   => 'ci-activity',
+			'fields' => array(),
+		),
+		'mci-lookup' => array(
+			'name'   => 'mci-lookup',
+			'fields' => array(),
+		),
 	);
 
 	const PAGES = array(
@@ -122,6 +130,23 @@ class DpagesMci extends Dpages implements Module {
 			'summary'        => 'Customer Menu',
 			'parent'         => '/',
 			'dplus_function' => 'mci'
+		),
+		'ci-admin' => array(
+			'template'       => 'dplus-menu',
+			'name'           => 'admin',
+			'title'          => 'CI Administration',
+			'summary'        => 'Customer Information Administration',
+			'parent'         => '/mci/',
+			'dplus_function' => 'ciadmn'
+		),
+		'mci-lookup' => array(
+			'template'       => 'dplus-function',
+			'name'           => 'lookup',
+			'title'          => 'Customer Lookup',
+			'summary'        => 'Lookup Customers',
+			'parent'         => '/mci/',
+			'dplus_function' => '',
+			'pw_template'    => 'mci-lookup'
 		),
 		'ci' => array(
 			'template'       => 'dplus-function',
@@ -309,6 +334,16 @@ class DpagesMci extends Dpages implements Module {
 			'dplus_function' => 'ci-doc',
 			'pw_template'    => 'ci-documents',
 			'jsoncode'       => 'ci-documents'
+		),
+		'ci-activity' => array(
+			'template'       => 'ci-function',
+			'name'           => 'activity',
+			'title'          => 'Activity',
+			'summary'        => 'View Customer Activity',
+			'parent'         => '/mci/ci/',
+			'dplus_function' => '',
+			'pw_template'    => 'ci-activity',
+			'jsoncode'       => ''
 		),
 	);
 
@@ -652,6 +687,7 @@ class DpagesMci extends Dpages implements Module {
 			'summary' => 'Installs and creates Dplus Online Customer Pages',
 			'singular' => true,
 			'autoload' => true,
+			'requires' => array('DplusPwPages', 'Dpages'),
 		);
 	}
 }

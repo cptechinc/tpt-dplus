@@ -29,6 +29,28 @@ $(function() {
 		form.submit();
 	});
 
+	$("body").on('keypress', 'form.allow-enterkey-submit input', function(e) {
+		if ($(this).closest('form').hasClass('allow-enterkey-submit')) {
+			return true;
+		} else {
+			return e.which !== 13;
+		}
+	});
+
+	$("body").on('keypress', 'form:not(.allow-enterkey-submit) input', function(e) {
+		if (e.which === 13) {
+			e.preventDefault();
+			var input = $(this);
+
+			if (input.closest('form').attr('tab-inputs') == "true") {
+				var $canfocus = $('input:not([type=hidden])');
+				var index = $canfocus.index(this) + 1;
+				if (index >= $canfocus.length) index = 0;
+				$canfocus.eq(index).focus();
+			}
+		}
+	});
+
 	$('form[submit-empty="false"]').submit(function () {
 		var empty_fields = $(this).find(':input:not(button)').filter(function () {
 			return $(this).val() === '';
@@ -117,6 +139,7 @@ $(function() {
 
 	$('.phone-input').keyup(function() {
 		$(this).val(format_phone($(this).val()));
+		$(this).attr('minlength', '12');
 	});
 
 	$('a.delete_button').click(function(e){
@@ -149,7 +172,6 @@ $.fn.extend({
 		console.log('loading ' + href + " into " +  parent.returnelementdescription());
 		element.load(href, function() {
 			init_datepicker();
-			// init_timepicker();
 			callback();
 		});
 	},
@@ -192,6 +214,35 @@ $.fn.extend({
 	},
 	formDisableFields: function() {
 
+	},
+	resizeModal: function(size) {
+		if ($(this).hasClass('modal')){
+			var modal_dialog = $(this).find('.modal-dialog');
+			var modal_size = '';
+
+			var regex_modal = /(modal-)/;
+			var regex_modal_size = /(modal-)(sm|md|lg|xl)/;
+			var regex_sizes = /(sm|md|lg|xl)/;
+
+			if (regex_modal_size.test(size)) {
+				modal_size = size;
+			} else {
+				if (regex_sizes.test(size)) {
+
+				} else {
+					size = 'md';
+				}
+				modal_size = 'modal-' + size;
+			}
+
+			if (regex_modal_size.test(modal_dialog.attr('class'))) {
+				var attrclass = modal_dialog.attr('class');
+				attrclass = attrclass.replace(regex_modal_size, modal_size);
+				modal_dialog.attr('class', attrclass);
+			} else {
+				modal_dialog.addClass(modal_size);
+			}
+		}
 	}
 });
 

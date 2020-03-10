@@ -1,7 +1,7 @@
 <?php
 	include_once('./ii-include.php');
 
-	if ($itemquery->count()) {
+	if ($lookup_ii->lookup_itm($itemID)) {
 		$page->show_breadcrumbs = false;
 		$page->body .= $config->twig->render('items/ii/bread-crumbs.twig', ['page' => $page, 'item' => $item]);
 		$page->title = "$itemID Purchase Orders";
@@ -22,7 +22,7 @@
 			if ($json['error']) {
 				$page->body .= $config->twig->render('util/alert.twig', ['type' => 'danger', 'title' => 'Error!', 'iconclass' => 'fa fa-warning fa-2x', 'message' => $json['errormsg']]);
 			} else {
-				$module_formatter = $modules->get('IiPurchaseOrders');
+				$module_formatter = $modules->get('SfIiPurchaseOrders');
 				$module_formatter->init_formatter();
 				$document_management = $modules->get('DocumentManagement');
 				$page->body .= $config->twig->render('items/ii/purchase-orders/purchase-orders.twig', ['page' => $page, 'itemID' => $itemID, 'json' => $json, 'module_formatter' => $module_formatter, 'blueprint' => $module_formatter->get_tableblueprint(), 'document_management' => $document_management]);

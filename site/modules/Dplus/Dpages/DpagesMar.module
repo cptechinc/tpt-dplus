@@ -47,7 +47,7 @@ class DpagesMar extends Dpages implements Module {
 			'title'          => 'Customer Commission Code',
 			'summary'        => 'View AR Customer Commission Code',
 			'parent'         => '/mar/armain/',
-			'dplus_function' => ''
+			'dplus_function' => 'ccm'
 		),
 		'ar-crtm' => array(
 			'template'       => 'dplus-function',
@@ -56,7 +56,7 @@ class DpagesMar extends Dpages implements Module {
 			'title'          => 'Customer Route Code',
 			'summary'        => 'View AR Customer Route Code',
 			'parent'         => '/mar/armain/',
-			'dplus_function' => ''
+			'dplus_function' => 'crtm'
 		),
 		'ar-spgpm' => array(
 			'template'       => 'dplus-function',
@@ -65,7 +65,7 @@ class DpagesMar extends Dpages implements Module {
 			'title'          => 'Salesperson Group Code',
 			'summary'        => 'View Salesperson Group Code',
 			'parent'         => '/mar/armain/',
-			'dplus_function' => ''
+			'dplus_function' => 'spgpm'
 		),
 		'ar-worm' => array(
 			'template'       => 'dplus-function',
@@ -74,7 +74,7 @@ class DpagesMar extends Dpages implements Module {
 			'title'          => 'Customer Write Off Code',
 			'summary'        => 'Customer Write Off Code',
 			'parent'         => '/mar/armain/',
-			'dplus_function' => ''
+			'dplus_function' => 'worm'
 		),
 		'ar-cpm' => array(
 			'template'       => 'dplus-function',
@@ -83,7 +83,7 @@ class DpagesMar extends Dpages implements Module {
 			'title'          => 'Customer Price Code',
 			'summary'        => 'Customer Price Code',
 			'parent'         => '/mar/armain/',
-			'dplus_function' => ''
+			'dplus_function' => 'cpm'
 		),
 		'ar-ctm' => array(
 			'template'       => 'dplus-function',
@@ -121,6 +121,12 @@ class DpagesMar extends Dpages implements Module {
 			$event->return = $this->get_codetable_code_editURL($table, $code);
 		});
 
+		$this->addHook('Page(pw_template=ar-code-table)::get_codetable_listURL', function($event) {
+			$table = $event->arguments(0);
+			$code = $event->arguments(1);
+			$event->return = $this->get_codetable_listURL($table, $code);
+		});
+
 		$this->addHookProperty('Page(pw_template=ar-code-table)::codetable', function($event) {
 			$page = $event->object;
 			$event->return = $page->name;
@@ -130,6 +136,12 @@ class DpagesMar extends Dpages implements Module {
 	public function get_codetable_viewURL($table, $code = false) {
 		$url = new Url($this->wire('pages')->get("pw_template=ar-code-table, name=$table")->url);
 		$url->query->set('code', $code);
+		return $url->getUrl();
+	}
+
+	public function get_codetable_listURL($table, $code = false) {
+		$url = new Url($this->wire('pages')->get("pw_template=ar-code-table, name=$table")->url);
+		$url->query->set('focus', $code);
 		return $url->getUrl();
 	}
 
@@ -160,7 +172,7 @@ class DpagesMar extends Dpages implements Module {
 			'summary' => 'Installs and creates AR Pages',
 			'singular' => true,
 			'autoload' => true,
-			'requires' => array('DplusPwPages'),
+			'requires' => array('DplusPwPages', 'Dpages'),
 			'installs' => array(),
 		);
 	}

@@ -1,6 +1,6 @@
 <?php namespace ProcessWire;
 
-	use Purl\Url;
+use Purl\Url;
 
 /**
  * class DpagesMii
@@ -113,6 +113,14 @@ class DpagesMii extends Dpages implements Module {
 			'summary'        => 'Item Information Menu',
 			'parent'         => '/',
 			'dplus_function' => 'mii'
+		),
+		'ii-admin' => array(
+			'template'       => 'dplus-menu',
+			'name'           => 'admin',
+			'title'          => 'II Administration',
+			'summary'        => 'Item Information Administration',
+			'parent'         => '/mii/',
+			'dplus_function' => 'iiadmn'
 		),
 		'ii' => array(
 			'template'       => 'dplus-function',
@@ -603,6 +611,9 @@ class DpagesMii extends Dpages implements Module {
 		return $url->getUrl();
 	}
 
+	public function get_requirementsoptions() {
+		return self::REQUIREMENTS_OPTIONS;
+	}
 
 	public static function getModuleInfo() {
 		return array(
@@ -611,10 +622,7 @@ class DpagesMii extends Dpages implements Module {
 			'summary' => 'Installs and creates Dplus Online Item Information  Pages',
 			'singular' => true,
 			'autoload' => true,
+			'requires' => array('DplusPwPages', 'Dpages'),
 		);
-	}
-
-	public function get_requirementsoptions() {
-		return self::REQUIREMENTS_OPTIONS;
 	}
 }

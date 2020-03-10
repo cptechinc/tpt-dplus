@@ -1,7 +1,7 @@
 <?php
 	$whsesession = WhsesessionQuery::create()->findOneBySessionid(session_id());
 	$warehouse   = WarehouseQuery::create()->findOneByWhseid($whsesession->whseid);
-	$config_inventory = $modules->get('WarehouseInventoryConfig');
+	$config_inventory = $modules->get('ConfigsWarehouseInventory');
 
 	$page->formurl = $page->parent('template=warehouse-menu')->child('template=redir')->url;
 
@@ -23,6 +23,8 @@
 			$page->body .= $config->twig->render('warehouse/inventory/find-item/results.twig', ['page' => $page, 'config' => $config_inventory, 'resultscount' => $resultscount, 'items' => $items, 'inventory' => $inventory, 'warehouse' => $warehouse]);
 		}
 	}
+
+	$config->scripts->append(hash_templatefile('scripts/warehouse/find-item.js'));
 
 	if ($page->print) {
 		$page->show_title = true;

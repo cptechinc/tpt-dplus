@@ -2,6 +2,8 @@
 
 use Purl\Url;
 
+require_once(__DIR__ . '/Dpages.module');
+
 /**
  * class DpagesCart
  *
@@ -45,14 +47,17 @@ class DpagesCart extends Dpages implements Module {
 		),
 	);
 
-	public static function getModuleInfo() {
-		return array(
-			'title' => 'Dplus Online Cart Pages',
-			'version' => 101,
-			'summary' => 'Installs and creates Dplus Online Cart Pages',
-			'singular' => true,
-			'autoload' => true,
-		);
+	public function init() {
+		$this->addHook('Page(pw_template=cart)::get_itm_lookupURL', function($event) {
+			$url = new Url($this->wire('pages')->get('pw_template=itm-json')->httpUrl);
+			$url->query->set('json', 'true');
+			$event->return = $url->getUrl();
+		});
+
+		$this->addHook('Page(pw_template=cart)::get_ii_lookupURL', function($event) {
+			$url = new Url($this->wire('pages')->get('pw_template=ii-item-lookup')->httpUrl);
+			$event->return = $url->getUrl();
+		});
 	}
 
 	/**
@@ -66,5 +71,16 @@ class DpagesCart extends Dpages implements Module {
 		$url->query->set('custID', $custID);
 		$url->query->set('shiptoID', $shiptoID);
 		return $url->getUrl();
+	}
+
+	public static function getModuleInfo() {
+		return array(
+			'title' => 'Dplus Online Cart Pages',
+			'version' => 101,
+			'summary' => 'Installs and creates Dplus Online Cart Pages',
+			'singular' => true,
+			'autoload' => true,
+			'requires' => array('DplusPwPages', 'Dpages'),
+		);
 	}
 }

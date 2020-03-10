@@ -8,10 +8,13 @@
 	$pickingsession->set_ordn($ordn);
 
 	$whsesession = WhsesessionQuery::create()->findOneBySessionid(session_id());
+	$whsesession->setFunction(whsesession::PICKING_UNGUIDED);
+	$whsesession->save();
 	$warehouse   = WarehouseQuery::create()->findOneByWhseid($whsesession->whseid);
 	$config_inventory = $modules->get('ConfigsWarehouseInventory');
 	$config_picking   = $modules->get('ConfigsWarehousePicking');
 	$page->title = "Picking Order #$ordn";
+
 
 	// CHECK If there are details to pick
 	$lines_query = PickSalesOrderDetailQuery::create()->filterBySessionidOrder(session_id(), $ordn);
@@ -39,7 +42,7 @@
 					$session->remove('verify_whseitempickitems');
 					$page->body .= $config->twig->render('warehouse/picking/provalley/scan/scan-form.twig', ['page' => $page]);
 				}
-				$session->remove('verify_whseitempick_items');
+
 			} else {
 				$query_phys = WhseitemphysicalcountQuery::create();
 				$query_phys->filterBySessionid(session_id());
@@ -54,7 +57,7 @@
 						$page->body .= $html->div('class=mb-3', $config->twig->render('util/alert.twig', ['type' => 'danger', 'title' => "Error searching '$scan'", 'iconclass' => 'fa fa-warning fa-2x', 'message' => $item->get_error()]));
 						$page->body .= $config->twig->render('warehouse/picking/provalley/scan/scan-form.twig', ['page' => $page]);
 					} else {
-						$page->body .= $config->twig->render('warehouse/picking/provalley/scan/add-scanned-item-form.twig', ['page' => $page, 'item' => $item]);
+						$page->body .= $config->twig->render('warehouse/picking/provalley/scan/add-scanned-item-form.twig', ['page' => $page, 'item' => $item, 'scan' => $scan]);
 					}
 
 				} elseif ($query_phys->count() == 0) {
@@ -80,7 +83,6 @@
 		if ($whsesession->is_orderfinished() || $whsesession->is_orderexited()) {
 			WhseItempickQuery::create()->filterByOrdn($ordn)->filterBySessionid(session_id())->delete();
 		}
-		//==$http->get("127.0.0.1".$page->parent->child('template=redir')->url."?action=start-pick-unguided&sessionID=".session_id());
 		$page->formurl = $page->parent->child('template=redir')->url;
 		$page->body = $config->twig->render('warehouse/picking/status.twig', ['page' => $page, 'whsesession' => $whsesession]);
 		$page->body .= '<div class="form-group"></div>';

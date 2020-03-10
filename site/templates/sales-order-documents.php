@@ -2,14 +2,15 @@
 	if ($input->get->ordn) {
 		$ordn = $input->get->text('ordn');
 		$document_management = $modules->get('DocumentManagement');
+		$lookup_orders = $modules->get('LookupSalesOrder');
 
-		if (SalesOrderQuery::create()->filterByOrdernumber($ordn)->count() || SalesHistoryQuery::create()->filterByOrdernumber($ordn)->count()) {
+		if ($lookup_orders->lookup_salesorder($ordn) || $lookup_orders->lookup_saleshistory($ordn)) {
 			$page->title = "Sales Order #$ordn Documents";
 
-			if (SalesOrderQuery::create()->filterByOrdernumber($ordn)->count()) {
+			if ($lookup_orders->lookup_salesorder($ordn)) {
 				$documents = $document_management->get_salesorderdocuments($ordn);
-			} elseif (SalesHistoryQuery::create()->filterByOrdernumber($ordn)->count()) {
-				$documents = $document_management->get_salesorderdocuments($ordn);
+			} elseif ($lookup_orders->lookup_saleshistory($ordn)) {
+				$documents = $document_management->get_saleshistorydocuments($ordn);
 			}
 
 			if ($input->get->document && $input->get->folder) {
@@ -28,7 +29,7 @@
 			$page->body = $config->twig->render('util/error-page.twig', ['title' => $page->headline, 'msg' => "Check if the Order Number is correct or if it is in Sales History"]);
 		}
 	} else {
-		$page->body = $config->twig->render('sales-orders/sales-order-lookup.twig', ['page' => $page]);
+		$page->body = $config->twig->render('sales-orders/sales-order/lookup-form.twig', ['page' => $page]);
 	}
 
 	include __DIR__ . "/basic-page.php";
