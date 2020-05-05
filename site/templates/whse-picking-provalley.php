@@ -15,13 +15,13 @@
 	$config_picking   = $modules->get('ConfigsWarehousePicking');
 	$page->title = "Picking Order #$ordn";
 
-
 	// CHECK If there are details to pick
 	$lines_query = PickSalesOrderDetailQuery::create()->filterBySessionidOrder(session_id(), $ordn);
 
 	if ($whsesession->is_orderfinished()) {
 		$page->body .= $config->twig->render('warehouse/picking/finished-order.twig', ['page' => $page, 'ordn' => $ordn]);
 	} elseif ($lines_query->count() > 0) {
+
 		if ($input->requestMethod('POST')) {
 			$pickingsession->handle_barcodeaction($input);
 			$session->redirect($page->fullURL->getUrl());
@@ -38,11 +38,11 @@
 
 				if ($query_pickeditems->count()) {
 					$page->body .= $config->twig->render('warehouse/picking/provalley/scan/verify-whseitempick-lotserials.twig', ['page' => $page, 'scan' => $scan, 'items' => $query_pickeditems->find()]);
+					$page->body .= $html->div('class=mb-3');
 				} else {
-					$session->remove('verify_whseitempickitems');
+					$session->remove('verify_whseitempick_items');
 					$page->body .= $config->twig->render('warehouse/picking/provalley/scan/scan-form.twig', ['page' => $page]);
 				}
-
 			} else {
 				$query_phys = WhseitemphysicalcountQuery::create();
 				$query_phys->filterBySessionid(session_id());
@@ -59,19 +59,22 @@
 					} else {
 						$page->body .= $config->twig->render('warehouse/picking/provalley/scan/add-scanned-item-form.twig', ['page' => $page, 'item' => $item, 'scan' => $scan]);
 					}
-
 				} elseif ($query_phys->count() == 0) {
 					$page->body .= $html->div('class=mb-3', $config->twig->render('util/alert.twig', ['type' => 'danger', 'title' => '0 items found', 'iconclass' => 'fa fa-warning fa-2x', 'message' => "No items found for '$scan'"]));
 					$page->body .= $config->twig->render('warehouse/picking/provalley/scan/scan-form.twig', ['page' => $page]);
 				} else {
 					$physicalitems = $query_phys->groupBy('itemid')->find();
 					$page->body .= $config->twig->render('warehouse/picking/provalley/scan/select-item-list.twig', ['page' => $page, 'items' => $physicalitems]);
+					$page->body .= $html->div('class=mb-3');
 				}
 			}
 		} else {
 			$page->body .= $config->twig->render('warehouse/picking/provalley/scan/scan-form.twig', ['page' => $page]);
 		}
-
+		
+		if (!$input->get->scan) {
+			$page->body .= $config->twig->render('warehouse/picking/provalley/picking-actions.twig', ['page' => $page]);
+		}
 		$page->body .= $config->twig->render('warehouse/picking/provalley/line-items.twig', ['page' => $page, 'lineitems' => $lines_query->find()]);
 
 		if ($session->removefromline) {

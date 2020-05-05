@@ -10,7 +10,6 @@ use Propel\Runtime\ActiveRecord\ActiveRecordInterface;
  * Module that loads the Module needed for the AR code tables
  */
 class CodeTablesAr extends WireData implements Module {
-
 	const CODE_TABLES = array(
 		'ccm' => array(
 			'code'        		 => 'ccm',
@@ -39,6 +38,26 @@ class CodeTablesAr extends WireData implements Module {
 		'ctm-notes' => array(
 			'code'        		 => 'ctm-notes',
 			'module'   			 => 'CodeTablesCtmNotes'
+		),
+		'cuc' => array(
+			'code'        		 => 'cuc',
+			'module'   			 => 'CodeTablesCuc'
+		),
+		'sic' => array(
+			'code'        		 => 'sic',
+			'module'   			 => 'CodeTablesSic'
+		),
+		'suc' => array(
+			'code'        		 => 'suc',
+			'module'   			 => 'CodeTablesSuc'
+		),
+		'cmm' => array(
+			'code'        		 => 'cmm',
+			'module'   			 => 'CodeTablesCmm'
+		),
+		'trm' => array(
+			'code'        		 => 'trm',
+			'module'   			 => 'CodeTablesTrm'
 		),
 	);
 

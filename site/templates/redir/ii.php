@@ -174,6 +174,12 @@
 		case 'ii-requirements':
 			$whse = $input->$requestmethod->text('whseID');
 			$view = $input->$requestmethod->text('view');
+			if ($view == '') {
+				$q = OptionsIiQuery::create();
+				$q->filterByUser(OptionsIi::USER_SYSTEM);
+				$config_ii = $q->findOne();
+				$view = OptionsIi::VIEW_REQUIREMENTS_OPTIONS_JSON[$config_ii->view_requirements];
+			}
 			//screen type would be REQ or AVL
 			$data = array("DBNAME=$dplusdb", 'IIREQUIRE', "ITEMID=$itemID", "WHSE=$whse", "REQAVL=$view");
 

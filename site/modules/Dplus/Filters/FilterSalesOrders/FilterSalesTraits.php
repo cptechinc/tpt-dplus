@@ -2,8 +2,6 @@
 
 use Propel\Runtime\ActiveQuery\Criteria;
 
-use SalesOrderQuery, SalesOrder;
-
 trait FilterSalesTraits {
 	/**
 	 * Filters Query by Order Number
@@ -13,12 +11,10 @@ trait FilterSalesTraits {
 	 */
 	public function filter_ordernumber(WireInput $input) {
 		if ($input->get->text('ordernumber_from')) {
-			$from = SalesOrder::get_paddedordernumber($input->get->text('ordernumber_from'));
-			$this->query->filterByOrdernumber($from, Criteria::GREATER_EQUAL);
+			$this->query->filterByOrdernumber($input->get->text('ordernumber_from'), Criteria::GREATER_EQUAL);
 		}
 		if ($input->get->text('ordernumber_through')) {
-			$through = SalesOrder::get_paddedordernumber($input->get->text('ordernumber_through'));
-			$this->query->filterByOrdernumber($through, Criteria::LESS_EQUAL);
+			$this->query->filterByOrdernumber($input->get->text('ordernumber_through'), Criteria::LESS_EQUAL);
 		}
 	}
 
@@ -90,7 +86,7 @@ trait FilterSalesTraits {
 			} else {
 				$filter = array($input->get->text('custID'));
 			}
-
+			
 			if (sizeof($filter) == 2) {
 				if (!empty($filter[0])) {
 					$this->query->filterByCustid($filter[0], Criteria::GREATER_EQUAL);

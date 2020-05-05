@@ -47,6 +47,10 @@ class DpagesMpo extends Dpages implements Module {
 			'fields' => array(),
 			'paginated' => true
 		),
+		'po-code-table' => array(
+			'name'   => 'po-code-table',
+			'fields' => array()
+		),
 	);
 
 	const PAGES = array(
@@ -58,11 +62,19 @@ class DpagesMpo extends Dpages implements Module {
 			'parent'         => '/',
 			'dplus_function' => 'mpo' // TODO: Change to mpo
 		),
+		'poadmn' => array(
+			'template'       => 'dplus-menu',
+			'name'           => 'admin',
+			'title'          => 'Administration',
+			'summary'        => 'Purchase Order Administration',
+			'parent'         => '/mpo/',
+			'dplus_function' => 'poadmn'
+		),
 		'po-list' => array(
 			'template'       => 'dplus-function',
 			'name'           => 'purchase-orders',
-			'title'          => 'Purchase Orders',
-			'summary'        => 'View Purchase Orders',
+			'title'          => 'Purchase Order List',
+			'summary'        => 'View Purchase Order List',
 			'parent'         => '/mpo/',
 			'dplus_function' => '',
 			'pw_template'    => 'purchase-orders'
@@ -80,7 +92,7 @@ class DpagesMpo extends Dpages implements Module {
 			'template'       => 'dplus-function',
 			'name'           => 'purchase-order',
 			'title'          => 'Purchase Order',
-			'summary'        => 'View Purchase Order',
+			'summary'        => 'View a Purchase Order',
 			'parent'         => '/mpo/',
 			'dplus_function' => '',
 			'pw_template'    => 'purchase-order-view'
@@ -120,6 +132,15 @@ class DpagesMpo extends Dpages implements Module {
 			'parent'         => '/mpo/purchase-history/',
 			'dplus_function' => '',
 			'pw_template'    => 'purchase-history-orders-vendor'
+		),
+		'po-cnfm' => array(
+			'template'       => 'dplus-function',
+			'pw_template'    => 'po-code-table',
+			'name'           => 'cnfm',
+			'title'          => 'Confirmation Code',
+			'summary'        => 'View / Edit Confirmation Code',
+			'parent'         => '/mpo/admin/',
+			'dplus_function' => 'cnfm'
 		),
 	);
 
@@ -182,6 +203,37 @@ class DpagesMpo extends Dpages implements Module {
 		});
 	}
 
+	public function init() {
+		$this->addHook('Page(pw_template=po-code-table-menu|po-code-table)::get_codetable_viewURL', function($event) {
+			$table = $event->arguments(0);
+			$code = $event->arguments(1);
+			$event->return = $this->get_codetable_viewURL($table, $code);
+		});
+
+		$this->addHook('Page(pw_template=po-code-table)::get_codetable_code_deleteURL', function($event) {
+			$table = $event->arguments(0);
+			$code = $event->arguments(1);
+			$event->return = $this->get_codetable_code_deleteURL($table, $code);
+		});
+
+		$this->addHook('Page(pw_template=po-code-table)::get_codetable_code_editURL', function($event) {
+			$table = $event->arguments(0);
+			$code = $event->arguments(1);
+			$event->return = $this->get_codetable_code_editURL($table, $code);
+		});
+
+		$this->addHook('Page(pw_template=po-code-table)::get_codetable_listURL', function($event) {
+			$table = $event->arguments(0);
+			$code = $event->arguments(1);
+			$event->return = $this->get_codetable_listURL($table, $code);
+		});
+
+		$this->addHookProperty('Page(pw_template=po-code-table)::codetable', function($event) {
+			$page = $event->object;
+			$event->return = $page->name;
+		});
+	}
+
 	/**
 	 * Returns URL to Purchase Orders Page
 	 * @return string           URL
@@ -212,6 +264,33 @@ class DpagesMpo extends Dpages implements Module {
 	 */
 	public function get_purchasehistory_vendorURL() {
 		return $this->wire('pages')->get('pw_template=purchase-history-orders-vendor')->url;
+	}
+
+	public function get_codetable_viewURL($table, $code = false) {
+		$url = new Url($this->wire('pages')->get("pw_template=po-code-table, name=$table")->url);
+		$url->query->set('code', $code);
+		return $url->getUrl();
+	}
+
+	public function get_codetable_listURL($table, $code = false) {
+		$url = new Url($this->wire('pages')->get("pw_template=po-code-table, name=$table")->url);
+		$code = str_replace(' ', '-', $code);
+		$url->query->set('focus', $code);
+		return $url->getUrl();
+	}
+
+	public function get_codetable_code_deleteURL($table, $code) {
+		$url = new Url($this->wire('pages')->get("pw_template=po-code-table, name=$table")->url);
+		$url->query->set('action', 'remove-code');
+		$url->query->set('table', $table);
+		$url->query->set('code', $code);
+		return $url->getUrl();
+	}
+
+	public function get_codetable_code_editURL($table, $code) {
+		$url = new Url($this->wire('pages')->get("pw_template=po-code-table, name=$table")->url);
+		$url->query->set('code', $code);
+		return $url->getUrl();
 	}
 
 	public static function getModuleInfo() {
