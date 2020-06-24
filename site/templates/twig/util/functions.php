@@ -105,3 +105,9 @@
 		return $object->$property;
 	});
 	$config->twig->addFilter($filter);
+
+
+	$filter = new Twig_Filter('stripslashes', function ($str) {
+		return stripslashes($str);
+	});
+	$config->twig->addFilter($filter);
