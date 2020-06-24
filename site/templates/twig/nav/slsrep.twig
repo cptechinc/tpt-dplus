@@ -9,17 +9,17 @@
 	</li>
 	<li class="nav-item">
 		<a class="nav-link" href="{{ pages.get('pw_template=cart').url }}">
-			{{ pages.get('pw_template=cart').title }} <i class="fa fa-shopping-cart" aria-hidden="true"></i>
+			{{ pages.get('pw_template=cart').title|raw }} <i class="fa fa-shopping-cart" aria-hidden="true"></i>
 		</a>
 	</li>
 	{% if user.has_function('ci') %}
 		<li class="nav-item">
-			<a class="nav-link" href="{{ pages.get('dplus_function=ci').url }}">{{ pages.get('dplus_function=ci').title }}</a>
+			<a class="nav-link" href="{{ pages.get('dplus_function=ci').url }}">{{ pages.get('dplus_function=ci').title|raw }}</a>
 		</li>
 	{% endif %}
 	{% if user.has_function('ii') %}
 		<li class="nav-item">
-			<a class="nav-link" href="{{ pages.get('dplus_function=ii').url }}">{{ pages.get('dplus_function=ii').title }}</a>
+			<a class="nav-link" href="{{ pages.get('dplus_function=ii').url }}">{{ pages.get('dplus_function=ii').title|raw }}</a>
 		</li>
 	{% endif %}
 	{% if user.has_function('mqo') %}
