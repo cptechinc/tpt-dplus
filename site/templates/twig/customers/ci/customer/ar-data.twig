@@ -26,7 +26,7 @@
 		<li class="list-group-item">
 			<div class="row">
 				<div class="col-sm-7">
-					Tax Code:
+					Current Finance Charge:
 				</div>
 				<div class="col-sm-5">
 					{{ customer.taxcode }}
@@ -76,7 +76,7 @@
 		<li class="list-group-item">
 			<div class="row">
 				<div class="col-sm-7">
-					Tax Exempt No:
+					Tax Exempt:
 				</div>
 				<div class="col-sm-5">
 					{{ customer.is_taxexempt() ? customer.taxexemptcode : 'N/A' }}

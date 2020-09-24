@@ -20,6 +20,7 @@ class DplusSanitizer extends WireData implements Module {
 		});
 	}
 
+
 	public static function getModuleInfo() {
 		return array(
 			'title' => 'Dplus Sanitizer',

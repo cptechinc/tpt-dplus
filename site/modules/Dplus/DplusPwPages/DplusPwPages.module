@@ -6,49 +6,62 @@
 			'dplus_function' => array(
 				'name'  => 'dplus_function',
 				'type'  => 'text',
-				'label' => 'Dplus Function'
+				'label' => 'Dplus Function',
+				'description' => 'Dplus Function Code',
+				'notes'       => 'Use if this is a Dplus Function Equivalent'
 			),
 			'function_url' => array(
 				'name'  => 'function_url',
 				'type'  => 'text',
-				'label' => 'URL to function'
+				'label' => 'URL to function',
+				'description' => '',
+				'notes'       => 'Use to Route to another function'
 			),
 			'pw_template' => array(
 				'name'  => 'pw_template',
 				'type'  => 'text',
-				'label' => 'ProcessWire Template'
-			)
+				'label' => 'ProcessWire Template',
+				'description' => '',
+				'notes'       => ''
+			),
+			'dplus_permission' => array(
+				'name'  => 'dplus_permission',
+				'type'  => 'text',
+				'label' => 'Dplus Permission Code',
+				'description' => 'Dplus Function Code as a permission',
+				'notes'       => 'Use the code as permissions barrier'
+			),
 		);
 
 		const TEMPLATES = array(
 			'dplus-menu' => array(
 				'name'   => 'dplus-menu',
-				'fields' => array('dplus_function', 'summary'),
+				'fields' => array('summary', 'dplus_function', 'dplus_permission'),
 				'paginated' => false
 			),
 			'dplus-function' => array(
 				'name'   => 'dplus-function',
-				'fields' => array('dplus_function', 'pw_template', 'summary'),
+				'fields' => array('summary', 'dplus_function', 'dplus_permission', 'pw_template'),
 				'paginated' => true
 			),
 			'dplus-function-link' => array(
 				'name'   => 'dplus-function-link',
-				'fields' => array('function_url', 'dplus_function', 'pw_template', 'summary'),
+				'fields' => array('summary', 'dplus_function', 'dplus_permission', 'function_url',),
 				'paginated' => false
 			),
 			'dplus-json' => array(
 				'name'   => 'dplus-json',
-				'fields' => array('dplus_function', 'pw_template', 'summary'),
+				'fields' => array('summary', 'pw_template'),
 				'paginated' => true
 			),
 			'warehouse-menu' => array(
 				'name'   => 'warehouse-menu',
-				'fields' => array('dplus_function', 'summary'),
+				'fields' => array('summary','dplus_function', 'dplus_permission'),
 				'paginated' => false
 			),
 			'warehouse-function' => array(
 				'name'   => 'warehouse-function',
-				'fields' => array('dplus_function', 'pw_template', 'summary'),
+				'fields' => array('summary', 'dplus_function', 'dplus_permission', 'pw_template'),
 				'paginated' => true
 			)
 		);
@@ -64,6 +77,7 @@
 				'parent'     => '/',
 				'parent-new' => '/' NOTE ** Optional **
 				'dplus_function' => NOTE ** If Needed by template **
+				'dplus_permission' => NOTE ** If Needed by template, permission needed **
 			)
 			*/
 		);
@@ -92,25 +106,25 @@
 		}
 
 		public function init() {
-			$this->addHookProperty('Page(template=dplus-function|ii-function)::pagenbr', function($event) {
+			$this->addHookProperty('Page::pagenbr', function($event) {
 				$page = $event->object;
 				$event->return = $this->wire('input')->pageNum;
 			});
 
-			$this->addHook('Page(template=dplus-function|ii-function)::paginate', function($event) {
+			$this->addHook('Page::paginate', function($event) {
 				$page = $event->object;
 				$pagenbr = $event->arguments(0);
 				$event->return = $this->paginate_page($page, $pagenbr);
 			});
 
-			$this->addHook('Page(template=dplus-function|ii-function)::get_pagecount', function($event) {
+			$this->addHook('Page::get_pagecount', function($event) {
 				$page = $event->object;
 				$count = $event->arguments(0);
 				$totalpages = ceil($count / $this->wire('session')->display);
 				$event->return = $totalpages == 0 ? 1 : $totalpages;
 			});
 
-			$this->addHookBefore('Page(template=dplus-function|ii-function)::render', function($event) {
+			$this->addHookBefore('Page::render', function($event) {
 				if ($this->wire('input')->get->display) {
 					$this->wire('session')->display = $this->wire('input')->get->text('display');
 				} else {
@@ -120,24 +134,24 @@
 				}
 			});
 
-			$this->addHook('Page(template=dplus-function|ii-function)::has_orderby', function($event) {
+			$this->addHook('Page::has_orderby', function($event) {
 				$page = $event->object;
 				$event->return = boolval($this->wire('input')->get->orderby);
 			});
 
-			$this->addHook('Page(template=dplus-function|ii-function)::orderby', function($event) {
+			$this->addHook('Page::orderby', function($event) {
 				$page = $event->object;
 				$event->return = $this->wire('input')->get->text('orderby');
 			});
 
-			$this->addHookProperty('Page(template=dplus-function|ii-function)::orderby_column', function($event) {
+			$this->addHookProperty('Page::orderby_column', function($event) {
 				$page = $event->object;
 				$sortby = $this->wire('input')->get->text('orderby');
 				$sortby_array = explode('-', $sortby);
 				$event->return = $sortby_array[0];
 			});
 
-			$this->addHookProperty('Page(template=dplus-function|ii-function)::orderby_sort', function($event) {
+			$this->addHookProperty('Page::orderby_sort', function($event) {
 				$page = $event->object;
 				$sortby = $this->wire('input')->get->text('orderby');
 				$order = 'ASC';
@@ -150,7 +164,7 @@
 				$event->return = $order;
 			});
 
-			$this->addHook('Page(template=dplus-function|ii-function)::get_sort', function($event) {
+			$this->addHook('Page::get_sort', function($event) {
 				$sort = 'ASC';
 
 				$page = $event->object;
@@ -164,7 +178,7 @@
 				$event->return = $sort;
 			});
 
-			$this->addHook('Page(template=dplus-function|ii-function)::get_sortURL', function($event) {
+			$this->addHook('Page::get_sortURL', function($event) {
 				$page = $event->object;
 				$column = $event->arguments(0);
 				$sort = $page->get_sort($column);
@@ -314,9 +328,17 @@
 		}
 
 		public function set_fieldproperties(Field $f, array $field) {
-			$f->type = ctype_upper($field['type']) ? $field['type'] : ucfirst($field['type']); // get a field type
-			$f->name = $field['name'];
+			$f->type  = ctype_upper($field['type']) ? $field['type'] : ucfirst($field['type']); // get a field type
+			$f->name  = $field['name'];
 			$f->label = $field['label'];
+
+			if (isset($field['notes'])) {
+				$f->notes = $field['notes'];
+			}
+
+			if (isset($field['description'])) {
+				$f->description = $field['description'];
+			}
 
 			if (isset($field['notes'])) {
 				$f->notes = $field['notes'];
@@ -461,6 +483,7 @@
 				}
 			} else {
 				foreach ($this::TEMPLATES[$page['template']]['fields'] as $fieldname) {
+					echo $page['template'] . "-".$fieldname . "<br>";
 					if (array_key_exists($fieldname, $page)) {
 						$pw_page->$fieldname = $page[$fieldname];
 					}

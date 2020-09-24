@@ -81,11 +81,13 @@ $(function() {
 		e.preventDefault();
 		var button = $(this);
 		var uri = new URI(button.attr('href'));
-
 		swal2.fire({
-			icon: 'question',
 			title: 'Select Action Type',
 			input: 'select',
+			icon: 'question',
+			confirmButtonClass: 'btn btn-sm btn-success',
+			cancelButtonClass: 'btn btn-sm btn-danger',
+			inputClass: 'form-control',
 			inputOptions: {
 				task: 'Task',
 				note: 'Note',
@@ -142,10 +144,16 @@ $(function() {
 	$('a.delete_button').click(function(e){
 		e.preventDefault();
 		var link = $(this);
+		var title = "Confirm Deletion"
+		var text = 'Are you sure?';
+
+		if (link.data('delete').length) {
+			text = 'Delete ' + link.data('delete') + '?';
+		}
 
 		swal2.fire({
-			title: "Confirm Deletion",
-			text: "Are you sure you want to delete?",
+			title: title,
+			text: text,
 			icon: 'warning',
 			showCancelButton: true,
 			confirmButtonText: 'Yes'
@@ -156,19 +164,19 @@ $(function() {
 		});
 	});
 
-	$('button.delete_button').click(function(e){
+	$('button.delete_button').click(function(e) {
 		e.preventDefault();
 		var button = $(this);
 		var action = $('.modal-form').attr("action");
 
 		swal2.fire({
 			title: "Confirm Deletion",
-			text: "Are you sure you want to delete?",
+			text: "Are you sure?",
 			icon: 'warning',
 			showCancelButton: true,
 			confirmButtonText: 'Yes'
-		}).then((result) => {
-			if (result.value) {
+		}).then((confirm) => {
+			if (confirm.value) {
 				button.closest('form').submit();
 				window.location.href = action;
 			}
@@ -256,8 +264,19 @@ $.fn.extend({
 				modal_dialog.addClass(modal_size);
 			}
 		}
+	},
+	clearValidation: function(){
+		var v = $(this).validate();
+		$('[name]',this).each(function(){
+			v.successList.push(this);
+			v.showErrors();
+		});
+		v.resetForm();
+		v.reset();
 	}
 });
+
+
 
 function toggle_nav() {
 	$(nav).toggle();
@@ -272,6 +291,26 @@ function init_datepicker() {
 		});
 	});
 }
+
+$('a.delete_button').click(function(e){
+	e.preventDefault();
+	var link = $(this);
+
+	swal2.fire({
+		title: "Confirm Deletion",
+		text: "Are you sure you want to delete?",
+		icon: 'warning',
+		showCancelButton: true,
+		confirmButtonClass: 'btn btn-success',
+		cancelButtonClass: 'btn btn-danger',
+		buttonsStyling: false,
+		confirmButtonText: 'Yes'
+	}).then((result) => {
+		if (result.value) {
+			window.location.href = link.attr('href');
+		}
+	});
+});
 
 /*==============================================================
 	STRING FUNCTIONS
@@ -319,6 +358,13 @@ Number.prototype.formatMoney = function(c, d, t) {
 String.prototype.capitalize = function() {
 	return this.charAt(0).toUpperCase() + this.slice(1)
 }
+
+String.prototype.urlencode = function() {
+	var string = this;
+	string = string.replace('!', '%21')
+	return encodeURIComponent(string);
+}
+
 
 Array.prototype.contains = function ( needle ) {
 	for (i in this) {

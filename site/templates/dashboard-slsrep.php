@@ -2,9 +2,12 @@
 	$module_dashboard = $modules->get('Dashboard');
 
 	$params_useractions['module_useractions'] = $modules->get('FilterUserActions');
-	$params_useractions['user']  = $user;
-	$params_useractions['input'] = $input;
-	$page->body .= $config->twig->render("dashboard/components/user-actions.twig", $params_useractions);
+
+	if ($params_useractions['module_useractions']->data['use_useractions']) {
+		$params_useractions['user']  = $user;
+		$params_useractions['input'] = $input;
+		$page->body .= $config->twig->render("dashboard/components/user-actions.twig", $params_useractions);
+	}
 
 	$filter_bookings = $modules->get('FilterBookings');
 
@@ -14,7 +17,7 @@
 		$bookings = $filter_bookings->bookings_user->get_bookings($input)->find();
 		$bookings_customer = $filter_bookings->bookings_customer->get_bookings_by_customer($input)->find();
 
-		$page->body .= $config->twig->render("dashboard/components/bookings.twig", ['page' => $page, 'bookings' => $bookings, 'customerbookings' => $bookings_customer, 'interval' => $filter_bookings->bookings_user->interval, 'todaysbookings' => $filter_bookings->bookings_user->get_todaysbookingstotal()]);
+		$page->body .= $config->twig->render("dashboard/components/bookings.twig", ['page' => $page, 'bookings' => $bookings, 'customers' => $bookings_customer, 'interval' => $filter_bookings->bookings_user->interval, 'todaysbookings' => $filter_bookings->bookings_user->get_todaysbookingstotal()]);
 		$page->js .= $config->twig->render("bookings/user/js/bookings.js.twig", ['page' => $page, 'bookingsdata' => $filter_bookings->convert_bookings_for_js($bookings), 'interval' => $filter_bookings->bookings_user->interval]);
 	}
 

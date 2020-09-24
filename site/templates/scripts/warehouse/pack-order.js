@@ -44,17 +44,20 @@ $(function() {
 		e.preventDefault();
 		var button = $(this);
 
-		swal2.fire({
+		swal({
 			title: 'Are you sure?',
-			text: "Do you want to exit this order?",
-			icon: 'warning',
+			text: "You are trying to leave this order",
+			type: 'warning',
 			showCancelButton: true,
+			confirmButtonClass: 'btn btn-success',
+			cancelButtonClass: 'btn btn-danger',
+			buttonsStyling: false,
 			confirmButtonText: 'Yes!'
 		}).then(function (result) {
-			if (result.value) {
+			if (result) {
 				window.location.href = button.attr('href');
 			}
-		});
+		}).catch(swal.noop);
 	});
 
 	/* ===============  3. Finish Order ========================== */

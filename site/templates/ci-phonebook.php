@@ -5,7 +5,6 @@
 
 	if ($input->get->q) {
 		$q = strtoupper($input->get->text('q'));
-
 		$page->show_breadcrumbs = false;
 		$page->body .= $config->twig->render('customers/ci/bread-crumbs.twig', ['page' => $page, 'customer' => $customer]);
 

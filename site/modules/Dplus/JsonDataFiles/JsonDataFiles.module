@@ -68,6 +68,17 @@
 				'sub'			=> 'visub',
 				'payments'      => 'vipayment',
 				'notes'         => 'vinotes'
+			),
+			'itm' => array(
+				'delete' => 'deleteitm'
+			),
+			'whse' => array(
+				'stock' => array(
+					'status' => 'stockstat'
+				),
+				'sales' => array(
+					'orders' => 'soopenorder'
+				)
 			)
 		);
 

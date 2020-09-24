@@ -1,45 +1,46 @@
 {
-    "name": "cptechinc/soft-wm",
-    "type": "library",
-    "description": "",
-    "keywords": [ "dplus-wm", "wm","warehouse-management" ],
-    "license": "MPL-2.0",
-    "homepage": "https://processwire.com",
-    "minimum-stability": "dev",
-    "repositories": [
-        {
-            "type": "git",
-            "url": "https://github.com/cptechinc/purl.git"
-        }
-    ],
-    "authors": [
-        {
-            "name": "Barbara Bullemer",
-            "email": "barbara@cptechinc.com",
-            "homepage": "https://www.cptechinc.com",
-            "role": "Developer"
-        },
-        {
-            "name": "Paul Gomez",
-            "email": "paul@cptechinc.com",
-            "homepage": "https://www.cptechinc.com",
-            "role": "Developer"
-        }
-    ],
-    "require": {
-        "php": ">=7.0.0",
-        "ext-gd": "*",
-        "jwage/purl": "dev-cptechinc",
-        "twig/twig": "^2.0",
-        "propel/propel": "~2.0@dev",
-        "cptechinc/dplus-model": "dev-master",
-        "cptechinc/dpluso-model": "dev-master",
-        "mikehaertl/phpwkhtmltopdf": "dev-master",
-        "picqer/php-barcode-generator": "dev-master"
-    },
-    "autoload": {
-        "files": [
-            "wire/core/ProcessWire.php"
-        ]
-    }
+	"name": "cptechinc/dplus",
+	"type": "library",
+	"description": "",
+	"keywords": [ "dplus", "distribution plus"],
+	"license": "MPL-2.0",
+	"homepage": "https://processwire.com",
+	"minimum-stability": "dev",
+	"repositories": [
+		{
+			"type": "git",
+			"url": "https://github.com/cptechinc/purl.git"
+		}
+	],
+	"authors": [
+		{
+			"name": "Barbara Bullemer",
+			"email": "barbara@cptechinc.com",
+			"homepage": "https://www.cptechinc.com",
+			"role": "Developer"
+		},
+		{
+			"name": "Paul Gomez",
+			"email": "paul@cptechinc.com",
+			"homepage": "https://www.cptechinc.com",
+			"role": "Developer"
+		}
+	],
+	"require": {
+		"php": ">=7.0.0",
+		"ext-gd": "*",
+		"jwage/purl": "dev-cptechinc",
+		"twig/twig": "2.x-dev#0da153eb3b843d1117e52c882df6f40aefb954ab",
+		"propel/propel": "~2.0@dev",
+		"cptechinc/dplus-model": "dev-master",
+		"cptechinc/dpluso-model": "dev-master",
+		"mikehaertl/phpwkhtmltopdf": "dev-master",
+		"picqer/php-barcode-generator": "dev-master",
+		"phpoffice/phpspreadsheet": "dev-master#11575ef3c416aa9c0be1ae3dfd3cad8d385a418c"
+	},
+	"autoload": {
+		"files": [
+			"wire/core/ProcessWire.php"
+		]
+	}
 }

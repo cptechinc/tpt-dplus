@@ -22,6 +22,8 @@
 				$sales_orders = $load_customer->get_salesorders();
 				$sales_history = $load_customer->get_saleshistory();
 				$quotes = $load_customer->get_quotes();
+				$page->show_breadcrumbs = false;
+				$page->body .= $config->twig->render('customers/ci/bread-crumbs.twig', ['page' => $page, 'customer' => $customer]);
 				$page->headline = "CI: $customer->name";
 
 				if (!$customer->is_active()) {
@@ -76,7 +78,7 @@
 		$customers = $query->paginate($input->pageNum, 10);
 
 		$page->searchURL = $page->url;
-		$page->body = $config->twig->render('customers/customer-search.twig', ['page' => $page, 'customers' => $customers]);
+		$page->body = $config->twig->render('customers/customer-search.twig', ['page' => $page, 'customers' => $customers, 'datamatcher' => $modules->get('RegexData'), 'q' => $input->get->text('q')]);
 		$page->body .= $config->twig->render('util/paginator.twig', ['page' => $page, 'resultscount'=> $customers->getNbResults()]);
 	}
 
