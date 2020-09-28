@@ -40,16 +40,17 @@
 			}
 		} else {
 			$q = $input->get->q ? $input->get->text('q') : '';
-			$query = ItemsearchQuery::create();
-			$query->filterActive();
-			$query->filterByOrigintype([Itemsearch::ORIGINTYPE_VENDOR, Itemsearch::ORIGINTYPE_ITEM]);
+			
+			$filter_itm = $modules->get('FilterItemMaster');
+			$filter_itm->init_query($user);
+			$filter_itm->filter_search($q);
+			$query = $filter_itm->get_query();
 
-			if ($query->filterByItemid($q)->count()) {
-				$query->groupby('itemid');
+			if ($query->count() == 1) {
+				$item = $query->findOne();
+				$session->redirect($page->get_customerpricingURL($custID, $item->itemid));
 			} else {
-				$query->filterByOrigintype([Itemsearch::ORIGINTYPE_VENDOR, Itemsearch::ORIGINTYPE_ITEM]);
-				$query->where("MATCH(Itemsearch.itemid, Itemsearch.refitemid, Itemsearch.desc1, Itemsearch.desc2) AGAINST (? IN BOOLEAN MODE)", "*$q*");
-				$query->groupby('itemid');
+				$items = $query->paginate($input->pageNum, 10);
 			}
 
 			if ($query->count() == 1) {
