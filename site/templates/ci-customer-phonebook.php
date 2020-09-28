@@ -10,9 +10,10 @@
 		$page->body .= $config->twig->render('customers/ci/bread-crumbs.twig', ['page' => $page, 'customer' => $customer]);
 
 		$page->title = "Phonebook: $customer->name";
+		
+		$q = strtoupper($input->get->text('q'));
 
 		if ($input->get->q) {
-			$q = strtoupper($input->get->text('q'));
 			$page->title = "Phonebook: $customer->name Searching for '$q'";
 			$query->filterByMatchExpression($q);
 		}
