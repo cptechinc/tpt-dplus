@@ -4,24 +4,31 @@
 	page                   ProcessWire\Page
 	po                     EditPoHead
 #}
-<form action="{{ page.url }}" class="allow-enterkey-submit" id="add-item-form">
+<form action="{{ page.url }}" class="allow-enterkey-submit" method="post" id="add-item-form">
 	<input type="hidden" name="action" value="add-item">
 	<input type="hidden" name="ponbr" value="{{ po.ponbr }}">
-
 	<div class="row">
 		<div class="col-sm-3">
-			<div class="input-group input-group-sm">
-				<span class="input-group-prepend">
-					<button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#ajax-modal" title="Search for / Choose Item" aria-label="Search for / Choose Item" data-search="item">
-						<span class="fa fa-search" aria-hidden="true"></span> <span class="sr-only">Search for / Choose Item</span>
-					</button>
-				</span>
-				<input type="text" name="itemID" class="form-control">
-			</div>
+			{% include 'util/form/input-with-modal-lookup.twig' with {
+					'name': 'itemID', 'id': 'additemID', 'value': '',
+					'attributes': {
+
+					},
+					'modaltarget': '#ajax-modal', 'modaldescription': 'Search for / Choose Item',
+					'attributes_button': {
+						'data-search': 'item',
+						'data-input': '#additemID',
+						'data-lookupurl': page.search_lookupURL('items'),
+					}
+				}
+			%}
 			<div class="descriptions collapse">
 				<div class="mt-1">
 					<small class="desc1"></small> <br>
 					<small class="desc2"></small>
+					{% if page.modules.get('ScreenFormatters').formatter('ii:item').is_weight_formatted() %}
+						<br> <small>Avg Weight:</small> <small class="weight"></small>
+					{% endif %}
 				</div>
 			</div>
 		</div>
@@ -29,7 +36,17 @@
 			<span class="uom"></span>
 		</div>
 		<div class="col-sm-1 text-right">
-			<input type="text" class="form-control form-control-sm text-right qty-input" name="qty">
+			{% include 'util/bootstrap/form/input.twig' with {
+					'input': {
+						'name': 'qty',
+						'id': 'qty',
+						'type': 'number'
+					},
+					'addclasses': [
+						'text-right qty-input'
+					]
+				}
+			%}
 		</div>
 		<div class="col-sm-2 text-right">
 			<div class="input-group">

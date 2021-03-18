@@ -3,33 +3,37 @@
 	$values = $input->$rm;
 	$whsesession = WhsesessionQuery::create()->findOneBySessionid(session_id());
 	$warehouse   = WarehouseQuery::create()->findOneByWhseid($whsesession->whseid);
-	$validate_po = $modules->get('ValidatePurchaseOrderNbr');
+	$validate_po = new Dplus\CodeValidators\Mpo();
 	$receiving = $modules->get('Receiving');
 	$m_print = $modules->get('PrintLabelItemReceiving');
 
 	if ($values->ponbr) {
 		$ponbr = PurchaseOrder::get_paddedponumber($input->get->text('ponbr'));
 
-		if ($validate_po->validate($ponbr)) {
+		if ($validate_po->po($ponbr)) {
 			if ($values->action) {
 				$m_print->process_input($input);
 			}
 
 			if ($session->response_print) {
-				$page->body .= $config->twig->render('code-tables/code-table-response.twig', ['response' => $session->response_print]);
-				$session->remove('response_print');
+				if ($session->response_print->has_error()) {
+					$page->body .= $config->twig->render('code-tables/code-table-response.twig', ['response' => $session->response_print]);
+					$session->remove('response_print');
+				} else {
+					$session->remove('response_print');
+					$session->redirect($page->receive_poURL($ponbr));
+				}
 			}
 
 			$receiving->set_ponbr($ponbr);
 			$po = $receiving->get_purchaseorder();
 			$thermal_labels = ThermalLabelFormatQuery::create();
-			$whse_printers = WhsePrinterQuery::create();
 
 			if ($values->linenbr) {
 				$linenbr = $values->int('linenbr');
 				$po_line = $po->get_receivingitem($linenbr);
 				$lotreceived = $receiving->get_receiving_item($linenbr, $values->text('lotserial'), $values->text('binID'));
-				echo $db_dplusdata->getLastExecutedQuery();
+
 				if (!$values->lotserial || $values->text('lotserial') == 'all') {
 					$lotreceived->setLotserial('all');
 				}

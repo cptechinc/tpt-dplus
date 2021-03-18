@@ -1,7 +1,7 @@
 <?php namespace ProcessWire;
 
 /**
- * Volume
+ * ItmResponse
  * Handles Response Data for Itm functions
  *
  * @author Paul Gomez
@@ -16,7 +16,7 @@
  * @property bool    $saved_itm_whse     Was ITM Warehouse record Updated?
  * @property bool    $saved_itm_pricing  Was ITM Pricing record Updated?
  * @property bool    $saved_itm_costing  Was ITM Pricing record Updated?
- *  @property array  $fields             Key-Value array of fields that need attention
+ * @property array   $fields             Key-Value array of fields that need attention
  *
  */
 class ItmResponse extends WireData {
@@ -24,6 +24,12 @@ class ItmResponse extends WireData {
 	const CRUD_CREATE = 1;
 	const CRUD_UPDATE = 2;
 	const CRUD_DELETE = 3;
+
+	const CRUD_DESCRIPTION = [
+		1 => 'created',
+		2 => 'updated',
+		3 => 'deleted'
+	];
 
 	public function __construct() {
 		$this->success = false;
@@ -93,6 +99,16 @@ class ItmResponse extends WireData {
 
 	public function has_field($field) {
 		return array_key_exists($field, $this->fields);
+	}
+
+	public function build_message($template) {
+		$crud = self::CRUD_DESCRIPTION[$this->action];
+		$replace = ['{itemid}' => $this->itemID, '{not}' => $this->has_success() ? '' : 'not', '{crud}' => $crud];
+		if ($this->whseID) {
+			$replace['{whseid}'] = $this->whseID;
+		}
+		$msg = str_replace(array_keys($replace), array_values($replace), $template);
+		$this->message = $msg;
 	}
 
 	public static function response_error($itemID, $message) {

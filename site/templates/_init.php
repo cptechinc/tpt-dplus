@@ -12,12 +12,16 @@
 
 include_once("./_func.php"); // include our shared functions
 
+$config->maxUrlSegments = 8;
+
 // BUILD AND INSTATIATE CLASSES
 $page->fullURL = new Purl\Url($page->httpUrl);
 $page->fullURL->path = '';
 if (!empty($_SERVER['REQUEST_URI']) && $_SERVER['REQUEST_URI'] != '/') {
 	$page->fullURL->join($_SERVER['REQUEST_URI']);
 }
+
+$input->purl = new Purl\Url($input->url($withQueryString = true));
 
 // CHECK DATABASE CONNECTIONS
 if ($page->id != $config->errorpage_dplusdb) {
@@ -43,8 +47,7 @@ if ($page->id != $config->errorpage_dplusdb) {
 
 		try {
 			$propel_name  = $module->dbConnectionName();
-			$$propel_name = $module->propelWriteConnection();
-			$$propel_name->useDebug(true);
+			$$propel_name = $module->getDebugConnection();
 		} catch (Exception $e) {
 			$module->logError($e->getMessage());
 			$session->redirect($pages->get($config->errorpage_dplusdb)->url, $http301 = false);
@@ -56,6 +59,7 @@ if ($page->id != $config->errorpage_dplusdb) {
 	if ($input->get->pdf || $input->get->print) {
 
 	} elseif (!in_array($page->template, $templates_nosignin) && LogpermQuery::create()->is_loggedin(session_id()) == false) {
+		$session->returnurl = $page->fullURL->getUrl();
 		$session->redirect($pages->get('template=login')->url, $http301 = false);
 	}
 
@@ -64,11 +68,7 @@ if ($page->id != $config->errorpage_dplusdb) {
 } else {
 	if (!$input->get->retry) {
 		$configimporter = $modules->get('Configs');
-		if ($configimporter->export_datafile_exists()) {
-			$configimporter->import();
-			$page->fullURL->query->set('retry', 'true');
-			$session->redirect($page->fullURL->getUrl());
-		}
+		
 	} else {
 		try {
 			$con    = $modules->get('DplusDatabase')->propelWriteConnection();
@@ -83,7 +83,7 @@ if ($page->id != $config->errorpage_dplusdb) {
 $rm = strtolower($input->requestMethod());
 $values = $input->$rm;
 
-if (!$values->action) {
+if (!$values->action || $page->template == 'dplus-screen-formatter') {
 	// ADD JS AND CSS
 	$config->styles->append(hash_templatefile('styles/bootstrap-grid.min.css'));
 	$config->styles->append(hash_templatefile('styles/theme.css'));
@@ -94,22 +94,17 @@ if (!$values->action) {
 	$config->styles->append(hash_templatefile('styles/lib/sweetalert2.css'));
 	$config->styles->append(hash_templatefile('styles/main.css'));
 
-
 	$config->scripts->append(hash_templatefile('scripts/lib/jquery.js'));
 	$config->scripts->append(hash_templatefile('scripts/popper.js'));
 	$config->scripts->append(hash_templatefile('scripts/bootstrap.min.js'));
 	$config->scripts->append(hash_templatefile('scripts/lib/fuelux.js'));
-	$config->scripts->append(hash_templatefile('scripts/lib/sweetalert.js'));
 	$config->scripts->append(hash_templatefile('scripts/lib/moment.js'));
 	$config->scripts->append(hash_templatefile('scripts/lib/bootstrap-notify.js'));
 	$config->scripts->append(hash_templatefile('scripts/uri.js'));
-	$config->scripts->append(hash_templatefile('scripts/lib/sweetalert.js'));
 	$config->scripts->append(hash_templatefile('scripts/lib/sweetalert2.js'));
 	$config->scripts->append(hash_templatefile('scripts/classes.js'));
 	$config->scripts->append(hash_templatefile('scripts/main.js'));
 }
-
-
 
 // SET CONFIG PROPERTIES
 if ($input->get->modal) {
@@ -136,16 +131,11 @@ $config->customer = $pages->get('/config/customer/');
 
 $session->sessionid = session_id();
 
-if (!$values->action) {
-	$config->twigloader = new Twig_Loader_Filesystem($config->paths->templates.'twig/');
-	$config->twig = new Twig_Environment($config->twigloader, [
-		'cache' => $config->paths->templates.'twig/cache/',
-		'auto_reload' => true,
-		'debug' => true
-	]);
-
-	$config->twig->addExtension(new Twig\Extension\DebugExtension());
-	include($config->paths->templates."/twig/util/functions.php");
+if (!$values->action || $page->template == 'dplus-screen-formatter') {
+	$mtwig = $modules->get('Twig');
+	$config->twigloader = $mtwig->getLoader();
+	$config->twig = $mtwig->getTwig();
+	$config->twig->getExtension(\Twig\Extension\CoreExtension::class)->setNumberFormat(3, '.', '');
 
 	if ($page->fullURL->query->__toString() != '') {
 		$page->title_previous = $page->title;

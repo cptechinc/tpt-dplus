@@ -23,6 +23,32 @@ $(function() {
 		return false;
 	});
 
+	$(".toggle-menu").on("click", function(e){
+		e.preventDefault();
+		e.stopPropagation();
+		var offcanvas_id =  $(this).attr('data-target');
+		$(offcanvas_id).toggleClass("show");
+		$('body').toggleClass("offcanvas-active");
+		$(".screen-overlay").toggleClass("show");
+		if ($(offcanvas_id).hasClass("show")) {
+			$(offcanvas_id).find('input[name=q]').focus();
+		}
+	});
+
+	$(".close, .screen-overlay").click(function(e){
+		$(".screen-overlay").removeClass("show");
+		$(".offcanvas").removeClass("show");
+		$("body").removeClass("offcanvas-active");
+	});
+
+	$(document).keyup(function(e) {
+		if (e.keyCode == 27) { // escape key maps to keycode `27`
+			if ($("#my_offcanvas1").hasClass("show")) {
+				$("#my_offcanvas1 .close").click();
+			}
+		}
+	});
+
 	$('.placard').on('accepted.fu.placard', function () {
 		var placard = $(this);
 		var form = placard.closest('form');
@@ -141,29 +167,6 @@ $(function() {
 		$(this).attr('minlength', '12');
 	});
 
-	$('a.delete_button').click(function(e){
-		e.preventDefault();
-		var link = $(this);
-		var title = "Confirm Deletion"
-		var text = 'Are you sure?';
-
-		if (link.data('delete').length) {
-			text = 'Delete ' + link.data('delete') + '?';
-		}
-
-		swal2.fire({
-			title: title,
-			text: text,
-			icon: 'warning',
-			showCancelButton: true,
-			confirmButtonText: 'Yes'
-		}).then((result) => {
-			if (result.value) {
-				window.location.href = link.attr('href');
-			}
-		});
-	});
-
 	$('button.delete_button').click(function(e) {
 		e.preventDefault();
 		var button = $(this);
@@ -171,16 +174,28 @@ $(function() {
 
 		swal2.fire({
 			title: "Confirm Deletion",
-			text: "Are you sure?",
+			text: "Are you sure you want to delete?",
 			icon: 'warning',
 			showCancelButton: true,
-			confirmButtonText: 'Yes'
+			confirmButtonText: 'Yes',
+			cancelButtonText: 'No',
+			focusCancel: true,
 		}).then((confirm) => {
 			if (confirm.value) {
 				button.closest('form').submit();
 				window.location.href = action;
 			}
 		});
+	});
+
+	$('#loading-modal').on('show.bs.modal', function (event) {
+		var modal = $(this);
+		modal.find('[role=status]').addClass('spinner-border');
+	});
+
+	$('#loading-modal').on('hide.bs.modal', function (event) {
+		var modal = $(this);
+		modal.find('[role=status]').removeClass('spinner-border');
 	});
 });
 
@@ -265,7 +280,7 @@ $.fn.extend({
 			}
 		}
 	},
-	clearValidation: function(){
+	clearValidation: function() {
 		var v = $(this).validate();
 		$('[name]',this).each(function(){
 			v.successList.push(this);
@@ -273,6 +288,17 @@ $.fn.extend({
 		});
 		v.resetForm();
 		v.reset();
+	},
+	formValues: function() {
+		var form = $(this);
+		if (form[0].tagName != 'FORM') {
+			return false;
+		}
+		var values = form.serializeArray().reduce(function(obj, item) {
+			obj[item.name] = item.value;
+			return obj;
+		}, {});
+		return values;
 	}
 });
 
@@ -312,6 +338,24 @@ $('a.delete_button').click(function(e){
 	});
 });
 
+function swal_delete_notes(callback) {
+	swal2.fire({
+		title: 'Confirm Deletion',
+		text: 'Are you sure you want to delete?',
+		icon: 'warning',
+		showCancelButton: true,
+		confirmButtonText: 'Yes',
+		cancelButtonText: 'No',
+		focusCancel: true,
+	}).then((result) => {
+		if (result.value) {
+			callback(true);
+		} else {
+			callback(false);
+		}
+	});
+}
+
 /*==============================================================
 	STRING FUNCTIONS
 =============================================================*/
@@ -344,6 +388,20 @@ function format_phone(input) {
 /*==============================================================
 	JS Prototype FUNCTIONS
 =============================================================*/
+function floatParse(num) {
+	if (typeof num != 'number' && num.indexOf(',')) {
+		num = num.replace(",", '');
+	}
+	return parseFloat(num);
+}
+
+function intParse(num) {
+	if (typeof num != 'number' && num.indexOf(',')) {
+		num = num.replace(",", '');
+	}
+	return parseInt(num);
+}
+
 Number.prototype.formatMoney = function(c, d, t) {
 	var n = this,
 		c = isNaN(c = Math.abs(c)) ? 2 : c,
@@ -353,7 +411,15 @@ Number.prototype.formatMoney = function(c, d, t) {
 		i = String(parseInt(n = Math.abs(Number(n) || 0).toFixed(c))),
 		j = (j = i.length) > 3 ? j % 3 : 0;
 		return s + (j ? i.substr(0, j) + t : "") + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + t) + (c ? d + Math.abs(n - i).toFixed(c).slice(2) : "");
- };
+};
+
+Number.prototype.truncate = function(precision) {
+	var number = this;
+	var array = number.toString().split(".");
+	array.push(array.pop().substring(0, precision));
+	var trimmed =  array.join(".");
+	return trimmed;
+}
 
 String.prototype.capitalize = function() {
 	return this.charAt(0).toUpperCase() + this.slice(1)
@@ -364,7 +430,6 @@ String.prototype.urlencode = function() {
 	string = string.replace('!', '%21')
 	return encodeURIComponent(string);
 }
-
 
 Array.prototype.contains = function ( needle ) {
 	for (i in this) {
@@ -381,5 +446,9 @@ const swal2 = Swal.mixin({
 		inputClass: 'form-control',
 		selectClass: 'form-control',
 	},
-	buttonsStyling: false
+	buttonsStyling: false,
+	cancelButtonText: 'No',
+	confirmButtonText: 'Yes',
+	focusConfirm: false,
+	focusCancel: true,
 })

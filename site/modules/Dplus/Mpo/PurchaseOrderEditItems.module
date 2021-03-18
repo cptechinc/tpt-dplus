@@ -3,6 +3,8 @@
 use Propel\Runtime\ActiveQuery\Criteria;
 use Purl\Url;
 
+use Dplus\CodeValidators\Mpo\PoDetail as PoDetailValidator;
+
 use PurchaseOrderDetailReceivingQuery, PurchaseOrderDetailReceiving;
 use ApInvoiceDetailQuery, ApInvoiceDetail;
 
@@ -18,6 +20,12 @@ include_once(__DIR__.'/MpoResponse.php');
  * @property string sessionID Session ID
  */
 class PurchaseOrderEditItems extends WireData implements Module {
+	const LINE_TYPES = [
+		'N' => 'normal stock',
+		'S' => 'special order',
+		'D' => 'drop ships'
+	];
+
 	/**
 	 * Returns Query for Purchase Order Details Edit
 	 * @param  string $ponbr Purchase Order Number
@@ -55,11 +63,17 @@ class PurchaseOrderEditItems extends WireData implements Module {
 
 		switch ($values->text('action')) {
 			case 'add-item':
-				$this->process_input_add_item($input);
+				$this->input_add_item($input);
 				break;
 			case 'update-item':
-				$this->process_input_update_item($input);
+				$this->input_update_item($input);
 				break;
+			case 'delete-item':
+				$this->input_delete_item($input);
+				break;
+		}
+		if ($values->text('action')) {
+			$this->wire('session')->setFor('epo', 'scrollto', 'items');
 		}
 	}
 
@@ -68,7 +82,7 @@ class PurchaseOrderEditItems extends WireData implements Module {
 	 * @param WireInput $input Input data
 	 * @return void
 	 */
-	public function process_input_add_item(WireInput $input) {
+	public function input_add_item(WireInput $input) {
 		$rm = strtolower($input->requestMethod());
 		$values = $input->$rm;
 		$q = $this->get_query_details($values->text('ponbr'));
@@ -85,11 +99,27 @@ class PurchaseOrderEditItems extends WireData implements Module {
 	}
 
 	/**
+	 * DELETE Purchase Order Item
+	 * @param  WireInput $input Input Data
+	 * @return void
+	 */
+	public function input_delete_item(WireInput $input) {
+		$rm = strtolower($input->requestMethod());
+		$values = $input->$rm;
+		$ponbr = $values->text('ponbr');
+		$linenbr = $values->int('linenbr');
+		$q = $this->get_query_details($ponbr);
+		$item = $q->findOneByLinenbr($linenbr);
+		// TODO
+		$this->wire('session')->response_epo = $response;
+	}
+
+	/**
 	 * Update / Edit Purchase Order Item
 	 * @param  WireInput $input Input Data
 	 * @return void
 	 */
-	public function process_input_update_item(WireInput $input) {
+	public function input_update_item(WireInput $input) {
 		$rm = strtolower($input->requestMethod());
 		$values = $input->$rm;
 		$ponbr = $values->text('ponbr');
@@ -116,20 +146,44 @@ class PurchaseOrderEditItems extends WireData implements Module {
 	protected function update_item(EditPoDetail $item, WireInput $input) {
 		$rm = strtolower($input->requestMethod());
 		$values = $input->$rm;
-		$item->setItemid($values->text('itemID'));
+
+		$this->update_item_validated($item, $input);
 		$item->setDescription($values->text('description'));
 		$item->setVendoritemid($values->text('vendoritemID'));
-		$item->setWhse($values->text('whse'));
-		$item->setQty_ordered($values->text('qty_ordered'));
-		$item->setCost($values->text('cost'));
-		$item->setCost_total($values->text('cost_total'));
+
+		$item->setQty_ordered($values->float('qty_ordered', ['precision' => $this->configs->decimal_places_qty()]));
+		$item->setQtyduein($values->float('qtyduein', ['precision' => $this->configs->decimal_places_qty()]));
+		$item->setCost($values->float('cost', ['precision' => $this->configs->decimal_places_cost()]));
+		$item->setCost_total($values->float('cost_total', ['precision' => $this->configs->decimal_places_cost()]));
 	}
 
+	/**
+	 * Updates EditPoDetail Record, that requires validation
+	 * @param  EditPoDetail $item  Purchase Order Item
+	 * @param  WireInput    $input Input Data
+	 * @return void
+	 */
+	protected function update_item_validated(EditPoDetail $item, WireInput $input) {
+		$rm = strtolower($input->requestMethod());
+		$values = $input->$rm;
+		$validate = new PoDetailValidator();
+
+		if ($validate->itemid($values->text('itemID'))) {
+			$item->setItemid($values->text('itemID'));
+		}
+
+		if ($validate->whseid($values->text('whse'))) {
+			$item->setWhse($values->text('whse'));
+		}
+
+		if ($validate->glCode($values->text('glaccount'))) {
+			$item->setGlaccount($values->text('glaccount'));
+		}
+	}
 
 /* =============================================================
 	Dplus Request Functions
 ============================================================= */
-
 	/**
 	 * Send PO Add Item Request
 	 * @param string $ponbr  Purchase Order Number
@@ -174,7 +228,6 @@ class PurchaseOrderEditItems extends WireData implements Module {
 		$url->query->set('sessionID', $this->sessionID);
 		$requestor->self_request($url->getUrl());
 	}
-
 
 /* =============================================================
 	Supplemental Functions
@@ -248,6 +301,7 @@ class PurchaseOrderEditItems extends WireData implements Module {
 		$q->filterByLinenbr($linenbr);
 		return number_format($q->findOne(), $this->configs->decimal_places_qty());
 	}
+
 /* =============================================================
 	ProcessWire Module Functions
 ============================================================= */

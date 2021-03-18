@@ -80,6 +80,26 @@ class DpagesMin extends Dpages implements Module {
 			'name'   => 'itm-validate',
 			'fields' => array()
 		),
+		'itm-misc' => array(
+			'name'   => 'itm-misc',
+			'fields' => array()
+		),
+		'itm-kit' => array(
+			'name'   => 'itm-kit',
+			'fields' => array()
+		),
+		'itm-xrefs-mxrfe' => array(
+			'name'   => 'itm-xrefs-mxrfe',
+			'fields' => array()
+		),
+		'itm-function' => array(
+			'name'   => 'itm-function',
+			'fields' => array('pw_template')
+		),
+		'min-itmp' => array(
+			'name'   => 'itm-itmp',
+			'fields' => array()
+		),
 	);
 
 	const PAGES = array(
@@ -234,6 +254,15 @@ class DpagesMin extends Dpages implements Module {
 			'parent'         => '/min/inmain/',
 			'dplus_function' => 'ioptm'
 		),
+		'min-itmp' => array(
+			'template'       => 'dplus-function',
+			'pw_template'    => 'itmp',
+			'name'           => 'itmp',
+			'title'          => 'Item Maintenance Permissions',
+			'summary'        => 'View / Edit User Item Maintenance Permissions',
+			'parent'         => '/min/inmain/',
+			'dplus_function' => 'itmp'
+		),
 		'itm' => array(
 			'template'       => 'dplus-function',
 			'pw_template'    => 'itm',
@@ -244,7 +273,7 @@ class DpagesMin extends Dpages implements Module {
 			'dplus_function' => 'itm'
 		),
 		'itm-pricing' => array(
-			'template'       => 'dplus-function',
+			'template'       => 'itm-function',
 			'pw_template'    => 'itm-pricing',
 			'name'           => 'pricing',
 			'title'          => 'Pricing',
@@ -253,7 +282,7 @@ class DpagesMin extends Dpages implements Module {
 			'dplus_function' => ''
 		),
 		'itm-warehouse' => array(
-			'template'       => 'dplus-function',
+			'template'       => 'itm-function',
 			'pw_template'    => 'itm-whse',
 			'name'           => 'warehouses',
 			'title'          => 'Warehouses',
@@ -262,7 +291,7 @@ class DpagesMin extends Dpages implements Module {
 			'dplus_function' => ''
 		),
 		'itm-costing' => array(
-			'template'       => 'dplus-function',
+			'template'       => 'itm-function',
 			'pw_template'    => 'itm-costing',
 			'name'           => 'costing',
 			'title'          => 'Costing',
@@ -271,7 +300,7 @@ class DpagesMin extends Dpages implements Module {
 			'dplus_function' => ''
 		),
 		'itm-xrefs' => array(
-			'template'       => 'dplus-function',
+			'template'       => 'itm-function',
 			'pw_template'    => 'itm-xrefs',
 			'name'           => 'xrefs',
 			'title'          => 'XRefs',
@@ -286,7 +315,7 @@ class DpagesMin extends Dpages implements Module {
 			'title'          => 'UPC X-ref',
 			'summary'        => 'View / Edit Item UPC X-ref',
 			'parent'         => '/min/inmain/itm/xrefs/',
-			'dplus_function' => ''
+			'dplus_permission' => 'upcx'
 		),
 		'itm-xrefs-vxm' => array(
 			'template'       => 'dplus-function',
@@ -295,7 +324,7 @@ class DpagesMin extends Dpages implements Module {
 			'title'          => 'VXM X-ref',
 			'summary'        => 'View / Edit Item VXM X-ref',
 			'parent'         => '/min/inmain/itm/xrefs/',
-			'dplus_function' => ''
+			'dplus_permission' => 'vxm'
 		),
 		'itm-xrefs-cxm' => array(
 			'template'       => 'dplus-function',
@@ -304,7 +333,7 @@ class DpagesMin extends Dpages implements Module {
 			'title'          => 'CXM X-ref',
 			'summary'        => 'View / Edit Item CXM X-ref',
 			'parent'         => '/min/inmain/itm/xrefs/',
-			'dplus_function' => ''
+			'dplus_permission' => 'cxm'
 		),
 		'itm-json' => array(
 			'template'       => 'dplus-json',
@@ -331,6 +360,33 @@ class DpagesMin extends Dpages implements Module {
 			'title'          => 'Search',
 			'summary'        => 'Search ITM Items',
 			'parent'         => '/min/inmain/itm/',
+			'dplus_function' => ''
+		),
+		'itm-misc' => array(
+			'template'       => 'itm-function',
+			'pw_template'    => 'itm-misc',
+			'name'           => 'misc',
+			'title'          => 'Misc',
+			'summary'        => 'ITM Misc',
+			'parent'         => '/min/inmain/itm/',
+			'dplus_function' => ''
+		),
+		'itm-kit' => array(
+			'template'       => 'itm-function',
+			'pw_template'    => 'itm-kit',
+			'name'           => 'kit',
+			'title'          => 'Kit',
+			'summary'        => 'ITM Kit',
+			'parent'         => '/min/inmain/itm/xrefs/',
+			'dplus_function' => ''
+		),
+		'itm-xrefs-mxrfe' => array(
+			'template'       => 'itm-function',
+			'pw_template'    => 'itm-xrefs-mxrfe',
+			'name'           => 'mxrfe',
+			'title'          => 'Mnfr / Competitor X-ref',
+			'summary'        => 'View / Edit Manufacturer / Competitor X-ref',
+			'parent'         => '/min/inmain/itm/xrefs/',
 			'dplus_function' => ''
 		),
 	);
@@ -400,11 +456,6 @@ class DpagesMin extends Dpages implements Module {
 /* =============================================================
 	ProcessWire Module Functions
 ============================================================= */
-	/**
-	 * ProcessWire Module Info
-	 *
-	 * @return void
-	 */
 	public static function getModuleInfo() {
 		return array(
 			'title' => 'Dplus MIN Pages Modules',

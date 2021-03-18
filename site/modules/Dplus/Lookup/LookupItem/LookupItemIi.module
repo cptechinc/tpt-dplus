@@ -1,7 +1,5 @@
 <?php namespace ProcessWire;
 
-include_once(__DIR__.'/LookupItem.module');
-
 /**
  * LookupItemIi
  *

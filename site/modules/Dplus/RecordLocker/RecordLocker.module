@@ -107,7 +107,10 @@ class RecordLocker extends WireData implements Module {
 			$q->filterByUserid($userID);
 		}
 		$q->filterByDate($datetime, Criteria::LESS_THAN);
-		return $q->delete();
+		if ($q->count()) {
+			return $q->delete();
+		}
+		return true;
 	}
 
 	/**

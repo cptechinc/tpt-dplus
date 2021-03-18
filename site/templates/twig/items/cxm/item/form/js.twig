@@ -2,9 +2,6 @@
 	var                    Description / Instance of
 	-------------------------------------------------
 	page                   ProcessWire\Page
-	item                   ItemXrefCustomer
-	item.item              ItemMasterItem
-	url_validate           URL to validate CXM form inputs
 #}
 $(function() {
 	var form_cxm = $('#cxm-item-form');
@@ -19,41 +16,63 @@ $(function() {
 /* =============================================================
 	Event Functions
 ============================================================= */
-	$("body").on("change", "#price_customer", function(e) {
+	$("body").on("change", "input[name=price_customer]", function(e) {
+		var input = $(this);
+		var price = parseFloat(input.val());
+		input.val(price.toFixed({{ cxm.field_attribute('price_customer', 'precision') }}));
 		calculate_peruom();
+	});
+
+	$("body").on("change", "input[name=price_retail]", function(e) {
+		var input = $(this);
+		var price = parseInt(input.val());
+		input.val(price.toFixed({{ cxm.field_attribute('price_retail', 'precision') }}));
+	});
+
+	$("body").on("change", "input[name=conversion]", function(e) {
+		var input = $(this);
+		var price = parseInt(input.val());
+		input.val(price.toFixed({{ cxm.field_attribute('conversion', 'precision') }}));
 	});
 
 	$("body").on("change", "#uom_pricing", function(e) {
 		calculate_peruom();
+		var uom = $(this).val();
+
+		if (uom.length) {
+			$('#price_uom').removeAttr('readonly');
+			$('#price_uom').removeAttr('tabindex');
+		} else {
+			$('#price_uom').attr('readonly', '');
+			$('#price_uom').attr('tabindex', '-1');
+		}
 	});
 
 	$("body").on("change", "#price_uom", function(e) {
+		var input = $(this);
+		var price = parseFloat(input.val());
+		input.val(price.toFixed({{ cxm.field_attribute('price_uom', 'precision') }}));
 		calculate_custprice();
 	});
 
-	$("body").on("click", "a.remove-cxm-item", function(e) {
-		e.preventDefault();
-		var button = $(this);
-
-		swal2.fire({
-			title: "Remove CXM Item?",
-			text: "Are you sure you want to remove this CXM Item?",
-			icon: 'warning',
-			showCancelButton: true,
-			confirmButtonText: 'Yes!'
-		}).then(function (result) {
-			if (result.value) {
-				window.location.href = button.attr('href');
-			}
-		});
+	$("body").on("change", "input[name=itemID]", function(e) {
+		var input = $(this);
+		populate_item_data(input.val());
 	});
+
+	$("body").on("change", "input[name=convert]", function(e) {
+		var input = $(this);
+		var conversion = parseFloat(input.val());
+		input.val(conversion.toFixed({{ cxm.field_attribute('conversion', 'precision') }}));
+	});
+
 
 /* =============================================================
 	Unsaved Fields Alert
 ============================================================= */
 	origForm = form_cxm.serialize();
 
-	$("body").on("click", "a:not(#cxm-item-form.form-link, #ajax-modal a, [data-target=#ajax-modal])", function(e) {
+	$("body").on("click", "a:not(#cxm-item-form .form-link, #ajax-modal a, [data-target=#ajax-modal])", function(e) {
 		if (form_cxm.serialize() !== origForm) {
 			e.preventDefault();
 			var a = $(this);
@@ -85,13 +104,7 @@ $(function() {
 	modal_ajax.on('show.bs.modal', function (event) {
 		var button = $(event.relatedTarget); // Button that triggered the modal
 		var modal = $(this);
-		var url = '{{ page.searchcustomersURL }}';
-
-		if (button.data('search') == 'customer') {
-			url = '{{ page.searchcustomersURL }}';
-		} else {
-			url = '{{ page.searchitemsURL }}';
-		}
+		var url = button.data('lookupurl');
 
 		modal.find('.modal-title').text(button.attr('title'));
 		modal.resizeModal('xl');
@@ -111,9 +124,9 @@ $(function() {
 		e.preventDefault();
 		var button = $(this);
 		var itemID = button.data('itemid');
-		var description = button.find('.description').text();
-		input_itemID.val(itemID);
-		input_itemID.closest('.item-col').find('.description').text(description);
+		var description = button.data('description');
+		var description2 = button.data('description2');
+		input_itemID.val(itemID).change();
 		modal_ajax.modal('hide');
 	});
 
@@ -137,7 +150,6 @@ $(function() {
 /* =============================================================
 	Validation Functions
 ============================================================= */
-
 	var validator = form_cxm.validate({
 		errorClass: "is-invalid",
 		validClass: "is-valid",
@@ -149,31 +161,28 @@ $(function() {
 			custID: {
 				required: true,
 				remote: {
-					url: '{{ url_validate }}',
+					url: '{{ page.jsonapiURL('mar/validate/custid/') }}',
 					type: "get",
-					data: {
-						action: 'validate-custid'
-					}
+					data: {}
 				}
 			},
 			custitemID: {
 				required: true,
 				maxlength: {{ cxm.maxlength_custitemid() }},
 				remote: {
-					url: '{{ url_validate }}',
+					url: '{{ page.jsonapiURL('mso/validate/cxm/') }}',
 					type: "get",
 					data: {
 						custID: function() {
 							return $('input[name=custID]').val();
 						},
-						action: function() {
+						new: function() {
 							var input = $('input[name=custitemID]');
 
-							if (input.val() == input.data('custitemid')) {
-								return 'validate-cust-itemid';
-							} else {
-								return 'validate-cust-itemid-new';
+							if (input.val() != input.data('custitemid')) {
+								return 'true';
 							}
+							return 'false';
 						}
 					}
 				}
@@ -182,11 +191,9 @@ $(function() {
 				{% if page.pw_template == 'cxm' %}
 					required: true,
 					remote: {
-						url: '{{ url_validate }}',
+						url: '{{ page.jsonapiURL('inv/validate/itemid/') }}',
 						type: "get",
-						data: {
-							action: 'validate-itemid'
-						}
+						data: {}
 					}
 				{% endif %}
 			},
@@ -197,25 +204,23 @@ $(function() {
 			custitemID: "Use a valid Cust Item ID, (No more than {{ cxm.maxlength_custitemid() }} characters)",
 		},
 		submitHandler: function(form) {
-			// var formdata = form_cxm.serializeArray().reduce(function(obj, item) {
-			// 	obj[item.name] = item.value;
-			// 	return obj;
-			// }, {});
-			update_cxm(form);
+			submit_cxm(form);
 		}
 	});
 
 
-	function update_cxm(form) {
+	function submit_cxm(form) {
 		request_validate_custitemID(function(exists) {
-			if (exists === true) {
-				if (input_custitemID.val() != input_custitemID.data('custitemid')) {
-					alert_existing();
+			if (exists === true && input_custitemID.val() != input_custitemID.data('custitemid')) {
+				swal_existing();
+			} else {
+				var allow_pdm_change = {{ cxm.allow_pdm_update() }};
+
+				if (allow_pdm_change && parseFloat(input_price_customer.val()) != 0.0 && input_price_customer.val() != $('input[name=price_contract]').val()) {
+					swal_update_pdm(form);
 				} else {
 					form.submit();
 				}
-			} else {
-				form.submit();
 			}
 		});
 	}
@@ -224,15 +229,13 @@ $(function() {
 		e.preventDefault();
 
 		request_validate_custitemID(function(exists) {
-			if (exists === true) {
-				if (input_custitemID.val() != input_custitemID.data('custitemid')) {
-					alert_existing();
-				}
+			if (exists === true && input_custitemID.val() != input_custitemID.data('custitemid')) {
+				swal_existing();
 			}
 		});
 	});
 
-	function alert_existing() {
+	function swal_existing() {
 		swal2.fire({
 			title: "Customer Item " + input_custitemID.val() + " exists",
 			text: 'Would you like to go edit this item?',
@@ -251,6 +254,42 @@ $(function() {
 		});
 	}
 
+	function swal_update_pdm(form) {
+		var html = '<table class="table table-sm">' +
+			'<tr>' +
+				'<td>Discount Price</td>' +
+				'<td class="text-right">'+ $('input[name=price_contract]').val() +'</td>' +
+			'</tr>' +
+			'<tr>' +
+				'<td>Customer X-ref Price</td>' +
+				'<td class="text-right">'+input_price_customer.val()+'</td>'+
+			'</tr>'+
+		'</table>';
+		html += 'Do you want to ';
+		if (parseFloat(input_price_customer.val()) == 0.00) {
+			html += 'create';
+		} else {
+			html += 'update';
+		}
+		html += ' discount record with this price?';
+
+		swal2.fire({
+			title: "Confirmation",
+			html: html,
+			icon: 'question',
+			showCancelButton: true,
+			confirmButtonText: 'Yes',
+			cancelButtonText: 'No',
+		}).then((result) => {
+			if (result.value) {
+				$('input[name=updatepdm]').val('true');
+			} else {
+				$('input[name=updatepdm]').val('false');
+			}
+			form.submit();
+		});
+	}
+
 /* =============================================================
 	AJAX Request Functions
 ============================================================= */
@@ -260,13 +299,33 @@ $(function() {
 	 * @return bool       Does CXM item exist?
 	 */
 	function request_validate_custitemID(callback) {
-		var url = new URI('{{ url_validate }}');
-		url.addQuery('action', 'validate-cust-itemid').addQuery('custID', input_custID.val());
+		var url = new URI('{{ page.jsonapiURL('mso/validate/cxm/') }}');
+		url.addQuery('custID', input_custID.val());
 		url.addQuery('custitemID', input_custitemID.val());
-		url.addQuery('return', 'bool');
 
 		$.getJSON(url.toString(), function( valid ) {
 			callback(valid);
+		});
+	}
+
+	function get_item(itemID, callback) {
+		var url = new URI('{{ page.jsonapiURL('inv/item/') }}');
+		url.addQuery('itemID', itemID).addQuery('fields', 'uom_sale,qtypercase');
+		$.getJSON(url.toString(), function(item) {
+			callback(item);
+		});
+	}
+
+	function populate_item_data(itemID, callback) {
+		get_item(itemID, function(item) {
+			var itemcol = $('.item-col');
+			itemcol.find('.description').text(item.description);
+			itemcol.find('.description2').text(item.description2);
+			itemcol.find('.description2').text(item.description2);
+			$('.item-uom').text(item.uom_sale);
+			input_itemID.attr('data-qtypercase', item.qtypercase);
+			input_itemID.attr('data-itemid', itemID);
+			callback();
 		});
 	}
 
@@ -274,21 +333,44 @@ $(function() {
 	Per UoM Calculation Functions
 ============================================================= */
 	function calculate_peruom() {
-		var custprice = input_price_customer.val();
-		var qty_percase = {{ item.item.qty_percase ? item.item.qty_percase : 0 }};
+		if (input_itemID.attr('data-qtypercase') == '' || input_itemID.attr('data-itemid') != input_itemID.val()) {
+			populate_item_data(input_itemID.val(), function() {
+				_calculate_peruom();
+			});
+		} else {
+			_calculate_peruom();
+		}
+	}
+
+	function _calculate_peruom() {
+		var custprice = parseFloat(input_price_customer.val());
+		var qty_percase = parseFloat(input_itemID.attr('data-qtypercase'));
 		var conversion = select_uom_pricing.find('option:selected').data('conversion');
 		var peruom = 0;
 		if (conversion) {
-			peruom = custprice / qty_percase * conversion;
+			peruom = (custprice / qty_percase) * parseFloat(conversion);
 		}
 		input_price_uom.val(peruom.toFixed(3));
 	}
 
 	function calculate_custprice() {
+		if (input_itemID.attr('data-qtypercase') == '' || input_itemID.attr('data-itemid') != input_itemID.val()) {
+			populate_item_data(input_itemID.val(), function() {
+				_calculate_custprice();
+			});
+		} else {
+			_calculate_custprice();
+		}
+	}
+
+	function _calculate_custprice() {
 		var peruom = input_price_uom.val();
-		var qty_percase = {{ item.item.qty_percase ? item.item.qty_percase : 0 }};
+		var qty_percase = parseFloat(input_itemID.attr('data-qtypercase'));
 		var conversion = select_uom_pricing.find('option:selected').data('conversion');
-		var custprice = peruom * qty_percase * conversion;
-		input_price_customer.val(custprice.toFixed(2));
+		if (conversion) {
+			var custprice = (peruom * qty_percase) / conversion;
+			input_price_customer.val(custprice.toFixed({{ cxm.field_attribute('price_customer', 'precision') }}));
+		}
+		input_price_uom.val(peruom.toFixed({{ cxm.field_attribute('price_uom', 'precision') }}));
 	}
 });

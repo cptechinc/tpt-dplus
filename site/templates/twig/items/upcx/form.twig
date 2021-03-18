@@ -19,7 +19,14 @@
 					<label for="upc">UPC Code</label>
 				</div>
 				<div class="col-sm-6">
-					<input type="text" class="{{ upc.isNew() ? 'form-control' : 'form-control-plaintext' }}" name="upc" id="upc" value="{{ upc.upc }}" {{ upc.isNew() ? '' : 'readonly' }}>
+					{% include 'util/form/input.twig' with {
+							'name': 'upc', 'value': upc.upc,
+							'class_add': [],
+							'attributes': {
+								'readonly': upc.isNew() == false,
+							}
+						}
+					%}
 				</div>
 			</div>
 			{% block form_input_itemid %}
@@ -28,7 +35,19 @@
 						<label for="itemID">Item ID</label>
 					</div>
 					<div class="col-sm-6">
-						<input type="text" class="{{ upc.isNew() ? 'form-control' : 'form-control-plaintext' }}" name="itemID" id="itemID" value="{{ upc.itemID }}" {{ upc.isNew() ? '' : 'readonly' }}>
+						{% include 'util/form/input-with-modal-lookup.twig' with {
+								'name': 'itemID', 'value': upc.itemid,
+								'attributes': {
+									'readonly': upc.itemid ? true : false
+								},
+								'modaltarget': '#ajax-modal',
+								'modaldescription': 'Search for / Choose Item',
+								'attributes_button': {
+									'data-search': 'item'
+								}
+							}
+						%}
+						<small class="text-muted help-text item-description">{{ upc.ItemMasterItem.description }}</small>
 					</div>
 				</div>
 			{% endblock %}
@@ -55,7 +74,7 @@
 					<label for="qty">Eaches per UPC</label>
 				</div>
 				<div class="col-sm-6">
-					<input type="number" class="form-control" name="qty" id="qty" value="{{ upc.qty }}">
+					<input type="number" class="form-control form-control-sm w-50 text-right" name="qty" id="qty" value="{{ upc.qty }}">
 				</div>
 			</div>
 			<div class="form-group row">
@@ -63,9 +82,9 @@
 					<label for="uom">Unit of Measure</label>
 				</div>
 				<div class="col-sm-6">
-					<select name="uom" class="custom-select custom-select-sm" id="uom">
+					<select name="uom" class="form-control form-control-sm" id="uom">
 						<option value=""></option>
-						{% for uom in unitsofm %}
+						{% for uom in upcx.get_unitsofm_purchase() %}
 							<option value="{{ uom.code }}" data-conversion="{{ uom.conversion }}" {{ uom.code == upc.uom ? 'selected' : ''}}>{{ uom.description }}</option>
 						{% endfor %}
 					</select>
@@ -101,13 +120,13 @@
 					2. Is a new Item
 					NOTE: Only show delete if item already exists.
 				#}
-				{% if recordlocker.function_locked_by_user('upcx', upc.upc) or upc.isNew() %}
+				{% if upcx.recordlocker.function_locked_by_user( upc.upc) or upc.isNew() %}
 					<button type="submit" class="btn btn-success" name="action" value="update-upcx">
 						<i class="fa fa-floppy-o" aria-hidden="true"></i> Save
 					</button>
 					{% if upc.isNew() == false %}
-						<a href="{{ page.upc_deleteURL(upc.upc)}}" class="btn btn-danger" data-delete="UPC {{ upc.upc }}">
-							<i class="fa fa-trash" aria-hidden="true"></i> Remove
+						<a href="{{ page.upc_deleteURL(upc.upc)}}" class="btn btn-danger delete_button" data-delete="UPC {{ upc.upc }}">
+							<i class="fa fa-trash" aria-hidden="true"></i> Delete
 						</a>
 					{% endif %}
 				{% endif %}

@@ -37,7 +37,7 @@
 		}
 
 		$page->body .= $config->twig->render("code-tables/mar/$page->codetable/form.twig", ['page' => $page, 'table' => $page->codetable, 'code' => $customer,'recordlocker' => $recordlocker]);
-		$page->js   .= $config->twig->render("code-tables/mar/$page->codetable/js.twig", ['page' => $page, 'customer' => $customer, 'm_cmm' => $module_codetable]);
+		$page->js   .= $config->twig->render("code-tables/mar/$page->codetable/js.twig", ['page' => $page, 'customer' => $customer]);
 	} else {
 		$page->title = $page->headline = "CMM";
 		$recordlocker->remove_lock($page->codetable);

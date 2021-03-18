@@ -1,11 +1,11 @@
 <?php namespace ProcessWire;
 
+include_once(__DIR__.'/DocumentManagement.module');
+
 use Purl\Url;
 
 use DocumentFoldersQuery, DocumentFolders;
 use DocumentsQuery, Documents;
-
-include_once(__DIR__.'/DocumentManagement.module');
 
 /**
  * Document Management VI

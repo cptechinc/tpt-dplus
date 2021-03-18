@@ -67,10 +67,6 @@ class DpagesMso extends Dpages implements Module {
 			'name'   => 'cxm',
 			'fields' => array()
 		),
-		'cxm-validate' => array(
-			'name'   => 'cxm-validate',
-			'fields' => array()
-		),
 	);
 
 	const PAGES = array(
@@ -136,22 +132,13 @@ class DpagesMso extends Dpages implements Module {
 			'dplus_function' => 'soptm'
 		),
 		'cxm' => array(
-			'template'       => 'dplus-json',
-			'pw_template'    => 'cxm-validate',
-			'name'           => 'validate',
-			'title'          => 'CXM Validate',
-			'summary'        => 'Validate CXM',
-			'parent'         => '/mso/somain/cxm/',
-			'dplus_function' => 'cxm'
-		),
-		'cxm-validate' => array(
 			'template'       => 'dplus-function',
 			'pw_template'    => 'cxm',
 			'name'           => 'cxm',
-			'title'          => 'CXM',
-			'summary'        => 'View / Edit Customer Item X-ref',
+			'title'          => 'Customer Item X-Reference',
+			'summary'        => 'View / Edit Customer Item X-Ref',
 			'parent'         => '/mso/somain/',
-			'dplus_function' => ''
+			'dplus_function' => 'cxm'
 		),
 		'sales-orders' => array(
 			'template'         => 'dplus-function',
@@ -245,24 +232,7 @@ class DpagesMso extends Dpages implements Module {
 	);
 
 	public function init_salesorder_hooks() {
-		/**
-		 * Adds self::is_user_editingorder() as User hook
-		 * @uses self::is_user_editingorder()
-		 */
-		$this->addHook('Page::remove_itemURL', function($event) {
-			$p = $event->object;
-			$ordn = $event->arguments(0);
-			$linenbr = $event->arguments(1);
-			$url = new Url($this->wire('pages')->get('template=dplus-menu,name=mso')->child('template=redir')->url);
-			$url->query->set('action', 'remove-line');
-			$url->query->set('ordn', $ordn);
-			$url->query->set('linenbr', $linenbr);
-			$event->return = $url->getUrl();
-		});
 
-		/**
-		 * Returns Edit Sales Order Page URL
-		 */
 		$this->addHook('Page::view_notesURL', function($event) {
 			$p = $event->object;
 			$ordn = $event->arguments(0);
@@ -273,9 +243,6 @@ class DpagesMso extends Dpages implements Module {
 			$event->return = $url->getUrl()."$hash";
 		});
 
-		/**
-		 * Returns Edit Sales Order Page URL
-		 */
 		$this->addHook('Page::edit_orderURL', function($event) {
 			$p = $event->object;
 			$ordn = $event->arguments(0);
@@ -284,17 +251,11 @@ class DpagesMso extends Dpages implements Module {
 			$event->return = $url->getUrl();
 		});
 
-		/**
-		 * Returns Sales Order Page URL
-		 */
 		$this->addHook('Page::view_orderURL', function($event) {
 			$ordn = $event->arguments(0);
 			$event->return = $this->get_salesorder_viewURL($ordn);
 		});
 
-		/**
-		 * Returns Sales Order Page URL
-		 */
 		$this->addHook('Page::unlock_orderURL', function($event) {
 			$ordn = $event->arguments(0);
 			$url = new Url($this->wire('pages')->get('template=dplus-menu,name=mso')->child('template=redir')->url);
@@ -324,6 +285,12 @@ class DpagesMso extends Dpages implements Module {
 	}
 
 	public function init_cxm_hooks() {
+		$this->addHook("Page(pw_template=cxm)::cxmURL", function($event) {
+			$p = $event->object;
+			$custID = $event->arguments(0);
+			$event->return = $this->get_cxmURL($custID);
+		});
+
 		$this->addHook("Page(pw_template=cxm)::cxm_itemURL", function($event) {
 			$p = $event->object;
 			$custID = $event->arguments(0);
@@ -345,7 +312,8 @@ class DpagesMso extends Dpages implements Module {
 
 		$this->addHook('Page(pw_template=cxm)::cxm_customerURL', function($event) {
 			$custID = $event->arguments(0);
-			$event->return = $this->get_cxm_customerURL($custID);
+			$key = $event->arguments(1);
+			$event->return = $this->get_cxm_customerURL($custID, $key);
 		});
 
 		$this->addHookProperty('Page(pw_template=cxm)::custID', function($event) {
@@ -377,13 +345,36 @@ class DpagesMso extends Dpages implements Module {
 			$item = $event->arguments(0);
 			$custID = $item->custid;
 			$custitemID = $item->custitemid;
-			$event->return = $this->get_cxm_customerURL($custID, "$custID-$custitemID");
+			$cxm = $this->wire('modules')->get('XrefCxm');
+			$event->return = $this->get_cxm_customerURL($custID, $cxm->get_recordlocker_key($item));
 		});
 	}
 
 /* =============================================================
 	URL Functions
 ============================================================= */
+
+	/**
+	 * Return Paginated URL to CXM Item Page
+	 * @param  string $custID Customer ID to focus / highlight
+	 * @return string
+	 */
+	public function get_cxmURL($custID = '') {
+		$page = $this->wire('pages')->get('pw_template=cxm');
+		$url = new Url($page->url);
+
+		$cxm = $this->wire('modules')->get('XrefCxm');
+		$filter = $this->wire('modules')->get('FilterCustomers');
+
+		if ($filter->exists($custID)) {
+			$url->query->set('focus', $custID);
+			$filter->custid($cxm->custids());
+			$position = $filter->position($custID);
+			$pagenbr = ceil($position / ($this->wire('session')->display - 1));
+			$url = $this->wire('modules')->get('Dpurl')->paginate($url, $page->name, $pagenbr);
+		}
+		return $url->getUrl();
+	}
 	/**
 	 * Return URL for CXM items filtered by Customer ID
 	 * @param  string $custID Customer ID
@@ -393,7 +384,39 @@ class DpagesMso extends Dpages implements Module {
 		$url = new Url($this->wire('pages')->get('pw_template=cxm')->url);
 		$url->query->set('custID', $custID);
 		if ($focus) {
+			return $this->get_cxm_customer_focusURL($custID, $focus);
+		}
+		return $url->getUrl();
+	}
+
+	/**
+	 * Return Paginated URL to CXM Item Page
+	 * @param  string $itemID Item ID
+	 * @param  string $focus  Record Locker Key for Item
+	 * @return string
+	 */
+	public function get_cxm_customer_focusURL($custID, $focus) {
+		$page = $this->wire('pages')->get('pw_template=cxm');
+		$url = new Url($page->url);
+		$url->query->set('custID', $custID);
+
+		if ($this->wire('session')->response_xref) {
+			if ($this->wire('session')->response_xref->key != $focus) {
+				$url->query->set('focus', $focus);
+			}
+		} else {
 			$url->query->set('focus', $focus);
+		}
+
+		$cxm = $this->wire('modules')->get('XrefCxm');
+		$item = $cxm->xref_by_recordlocker_key($focus);
+
+		if ($item) {
+			$filter = $this->wire('modules')->get('FilterXrefItemCxm');
+			$filter->custid($custID);
+			$position = $filter->position($item);
+			$pagenbr = ceil($position / ($this->wire('session')->display - 1));
+			$url = $this->wire('modules')->get('Dpurl')->paginate($url, $page->name, $pagenbr);
 		}
 		return $url->getUrl();
 	}
@@ -435,7 +458,7 @@ class DpagesMso extends Dpages implements Module {
 	 */
 	public function get_cxm_item_deleteURL($itemID, $custID, $custitemID) {
 		$url = new Url($this->wire('pages')->get('pw_template=cxm')->url);
-		$url->query->set('action', 'remove-cxm-item');
+		$url->query->set('action', 'delete-cxm-item');
 		$url->query->set('itemID', $itemID);
 
 		if ($custID) {

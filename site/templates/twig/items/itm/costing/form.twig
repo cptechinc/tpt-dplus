@@ -4,6 +4,7 @@
 	page                   ProcessWire\Page
 	item                   ItemMasterItem
 	m_costing              module ItmCosting
+	itm                    module Itm
 #}
 <form action="{{ page.itm_costingURL(item.itemid) }}" class="mb-3" id="item-costing-form" method="post">
 	<input type="hidden" name="itemID" value="{{ item.itemid }}">
@@ -44,7 +45,14 @@
 			<label for="standardcostbasedon">Based On</label>
 		</div>
 		<div class="col-sm-8">
-			{% include 'util/select.twig' with {'name': 'standardcostbasedon', 'id': 'standardcostbasedon', 'selectedvalue': item.standardcostbasedon, 'options': m_costing.get_standardcost_basedon_options(), 'show_value': true } %}
+			{% include 'util/form/select.twig' with {
+					'name':          'standardcostbasedon',
+					'id':            'standardcostbasedon',
+					'selected_value': item.standardcostbasedon,
+					'options':       m_costing.get_standardcost_basedon_options(),
+					'show_value': true,
+				}
+			%}
 		</div>
 	</div>
 	<div class="form-group row">
@@ -112,7 +120,7 @@
 			Only show Edit Actions if the Item is
 			1. Locked for editing by the User
 		#}
-		{% if recordlocker.function_locked_by_user(page.lockcode, item.itemid) %}
+		{% if itm.recordlocker.function_locked_by_user(item.itemid) %}
 			<button type="submit" class="btn btn-success" name="action" value="update-itm-costing">
 				<i class="fa fa-floppy-o" aria-hidden="true"></i> Save
 			</button>

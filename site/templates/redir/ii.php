@@ -175,10 +175,10 @@
 			$whse = $input->$requestmethod->text('whseID');
 			$view = $input->$requestmethod->text('view');
 			if ($view == '') {
-				$q = ConfigIiQuery::create();
-				$q->filterByUser(ConfigIi::USER_SYSTEM);
+				$q = OptionsIiQuery::create();
+				$q->filterByUserid(OptionsIi::USER_SYSTEM);
 				$config_ii = $q->findOne();
-				$view = ConfigIi::VIEW_REQUIREMENTS_OPTIONS_JSON[$config_ii->view_requirements];
+				$view = OptionsIi::VIEW_REQUIREMENTS_OPTIONS_JSON[$config_ii->view_requirements];
 			}
 			//screen type would be REQ or AVL
 			$data = array("DBNAME=$dplusdb", 'IIREQUIRE', "ITEMID=$itemID", "WHSE=$whse", "REQAVL=$view");
@@ -497,7 +497,7 @@
 		$http = new WireHttp();
 		$http->get("127.0.0.1/cgi-bin/".$config->cgis['default']."?fname=$filename");
 	}
-
+	
 	if (!empty($session->get('loc')) && !$config->ajax) {
 		$session->redirect($session->loc, $http301 = false);
 	}

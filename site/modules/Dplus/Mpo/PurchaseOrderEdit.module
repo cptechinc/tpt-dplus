@@ -3,12 +3,17 @@
 use Propel\Runtime\ActiveQuery\Criteria;
 use Purl\Url;
 
+use Dplus\CodeValidators\Map    as MapValidator;
+use Dplus\CodeValidators\Mpo    as MpoValidator;
+use Dplus\CodeValidators\Mpo\Po as PoValidator;
+
 use PurchaseOrderQuery, PurchaseOrder;
 use WarehouseQuery, Warehouse;
 use VendorQuery, Vendor;
 use ShipviaQuery, Shipvia;
 use ApTermsCodeQuery, ApTermsCode;
 use CountryCodesQuery, CountryCodes;
+use ItemMasterItemQuery, ItemMasterItem;
 
 use EditPoHeadQuery, EditPoHead;
 use StatesQuery, States;
@@ -33,7 +38,7 @@ class PurchaseOrderEdit extends WireData implements Module {
 		'ii_lookup' => 'ii-item-lookup',
 		'itm_json'  => 'itm-json',
 		'vi_json'   => 'vi-json',
-		'search_items'     => 'item-search',
+		'search_items'     => 'itm-search',
 		'search_vendors'   => 'vi-search',
 		'search_countries' => 'lookup-country-codes',
 		'search_shipfrom'  => 'vi-shipfrom'
@@ -44,10 +49,12 @@ class PurchaseOrderEdit extends WireData implements Module {
 	 * @param  string $ponbr Purchase Order Number
 	 * @return EditPoHeadQuery
 	 */
-	public function get_query_header($ponbr) {
+	public function get_query_header($ponbr = '') {
 		$q = EditPoHeadQuery::create();
 		$q->filterBySessionid($this->sessionID);
-		$q->filterByPonbr($ponbr);
+		if ($ponbr) {
+			$q->filterByPonbr($ponbr);
+		}
 		return $q;
 	}
 
@@ -68,6 +75,15 @@ class PurchaseOrderEdit extends WireData implements Module {
 	public function exists_editable_header($ponbr) {
 		$q = $this->get_query_header($ponbr);
 		return boolval($q->count());
+	}
+
+	/**
+	 * Delete Header(s) for session
+	 * @return bool
+	 */
+	public function delete_editable_header() {
+		$q = $this->get_query_header();
+		return $q->delete();
 	}
 
 	/**
@@ -94,19 +110,23 @@ class PurchaseOrderEdit extends WireData implements Module {
 
 		switch ($values->text('action')) {
 			case 'update-header':
-				$this->process_input_update_header($input);
+				$this->input_update_header($input);
 				break;
 			case 'update-header-payto':
-				$this->process_input_update_header_payto($input);
+				$this->input_update_header_payto($input);
 				break;
 			case 'update-header-phone':
-				$this->process_input_update_header_phone($input);
+				$this->input_update_header_phone($input);
 				break;
 			case 'create-po':
-				$this->process_input_create_po($input);
+				$this->input_create_po($input);
+				break;
+			case 'verify-po-created':
+				$this->input_verify_created_po($input);
 				break;
 			case 'add-item':
 			case 'update-item':
+			case 'delete-item':
 				$this->items->process_input($input);
 				break;
 			case 'update-notes':
@@ -115,6 +135,8 @@ class PurchaseOrderEdit extends WireData implements Module {
 				$qnotes->process_input($input);
 				break;
 			case 'exit':
+				$ponbr = $values->text('ponbr');
+				$this->request_po_exit($ponbr);
 				break;
 		}
 	}
@@ -124,7 +146,7 @@ class PurchaseOrderEdit extends WireData implements Module {
 	 * @param  WireInput $input Input Data
 	 * @return void
 	 */
-	public function process_input_update_header(WireInput $input) {
+	public function input_update_header(WireInput $input) {
 		$rm = strtolower($input->requestMethod());
 		$values = $input->$rm;
 		$ponbr = $values->text('ponbr');
@@ -142,7 +164,7 @@ class PurchaseOrderEdit extends WireData implements Module {
 		} else {
 			$response = MpoResponse::response_error($values->text('ponbr'), "PO # $ponbr header was not updated");
 		}
-		$this->wire('session')->response_epo = $response;
+		$this->wire('session')->setFor('response', 'epo', $response);
 	}
 
 	/**
@@ -150,27 +172,37 @@ class PurchaseOrderEdit extends WireData implements Module {
 	 * @param  WireInput $input Input Data
 	 * @return void
 	 */
-	public function process_input_create_po(WireInput $input) {
+	public function input_create_po(WireInput $input) {
 		$rm = strtolower($input->requestMethod());
 		$values = $input->$rm;
 		$vendorID = $values->text('vendorID');
-		$validate_vendor = $this->wire('modules')->get('ValidateVendorId');
+		$validate = new MapValidator();
 
-		if ($validate_vendor->validate($vendorID)) {
+		if ($vendorID == '' || $validate->vendorid($vendorID)) {
 			$this->request_create_po($vendorID);
-			$logperm = $this->get_logperm();
-
-			if (strlen($logperm->ordernbr) != PurchaseOrder::LENGTH) {
-				$response = MpoResponse::response_error('NEW', "Purchase Order for $vendorID not created");
-			} else {
-				$values->ponbr = $logperm->ordernbr;
-				$ponbr = $values->text('ponbr');
-				$response = MpoResponse::response_success($logperm->ordernbr, "PO # $ponbr was created");
-			}
+			$this->wire('session')->redirect($this->get_po_createdURL($vendorID), $http301 = false);
 		} else {
 			$response = MpoResponse::response_error('NEW', "Vendor $vendorID not found");
 		}
-		$this->wire('session')->response_epo = $response;
+		$this->wire('session')->setFor('response', 'epo', $response);
+	}
+
+	/**
+	 * Verify if PO has been created, redirect if needed.
+	 * @param  WireInput $input Input Data
+	 * @return void
+	 */
+	public function input_verify_created_po(WireInput $input) {
+		$rm = strtolower($input->requestMethod());
+		$values = $input->$rm;
+		$vendorID = $values->text('vendorID');
+		$logperm = $this->get_logperm();
+
+		if (strlen($logperm->ordernbr) != PurchaseOrder::LENGTH) {
+			$response = MpoResponse::response_error('NEW', "Purchase Order for $vendorID not created");
+		} else {
+			$this->wire('session')->redirect($this->get_po_editURL($logperm->ordernbr), $http301 = false);
+		}
 	}
 
 	/**
@@ -178,7 +210,7 @@ class PurchaseOrderEdit extends WireData implements Module {
 	 * @param  WireInput $input Input Data
 	 * @return void
 	 */
-	public function process_input_update_header_payto(WireInput $input) {
+	public function input_update_header_payto(WireInput $input) {
 		$rm = strtolower($input->requestMethod());
 		$values = $input->$rm;
 		$ponbr = $values->text('ponbr');
@@ -193,7 +225,7 @@ class PurchaseOrderEdit extends WireData implements Module {
 		} else {
 			$response = MpoResponse::response_error($values->text('ponbr'), "PO # $ponbr header was not updated");
 		}
-		$this->wire('session')->response_epo = $response;
+		$this->wire('session')->setFor('response', 'epo', $response);
 	}
 
 	/**
@@ -201,7 +233,7 @@ class PurchaseOrderEdit extends WireData implements Module {
 	 * @param  WireInput $input Input Data
 	 * @return void
 	 */
-	public function process_input_update_header_phone(WireInput $input) {
+	public function input_update_header_phone(WireInput $input) {
 		$rm = strtolower($input->requestMethod());
 		$values = $input->$rm;
 		$ponbr = $values->text('ponbr');
@@ -215,7 +247,7 @@ class PurchaseOrderEdit extends WireData implements Module {
 		} else {
 			$response = MpoResponse::response_error($values->text('ponbr'), "PO # $ponbr header was not updated");
 		}
-		$this->wire('session')->response_epo = $response;
+		$this->wire('session')->setFor('response', 'epo', $response);
 	}
 
 	/**
@@ -343,7 +375,7 @@ class PurchaseOrderEdit extends WireData implements Module {
 		$values = $input->$rm;
 		$invalid = array();
 
-		$validate = $this->wire('modules')->get('ValidatePo');
+		$validate = new PoValidator();
 		$fields = array(
 			'vendorid' => array(
 				'description'  => 'Vendor ID',
@@ -367,7 +399,8 @@ class PurchaseOrderEdit extends WireData implements Module {
 			),
 			'exchange_country' => array(
 				'description'  => 'Currency Country Code',
-				'input'        => 'exchange_country'
+				'input'        => 'exchange_country',
+				'allow_blank'  => true,
 			),
 		);
 
@@ -375,7 +408,7 @@ class PurchaseOrderEdit extends WireData implements Module {
 			if ($validate->$property($values->text($field['input']))) {
 				$setProperty = "set".ucfirst($property);
 				$po->$setProperty($values->text($field['input']));
-			} else {
+			} elseif (array_key_exists('allow_blank', $field) === false || $field['allow_blank'] === false) {
 				$invalid[$property] = $field['description'];
 			}
 		}
@@ -394,17 +427,27 @@ class PurchaseOrderEdit extends WireData implements Module {
 	Dplus Request Functions
 ============================================================= */
 	/**
-	 * Send PO Header Update Request
+	 * Send Request to Dplus
+	 * @param  array  $data
+	 * @return void
+	 */
+	private function request_dplus(array $data) {
+		$config = $this->wire('config');
+		$dplusdb = $this->wire('modules')->get('DplusOnlineDatabase')->db_name;
+		$data = array_merge(["DBNAME=$dplusdb"], $data);
+		$requestor = $this->wire('modules')->get('DplusRequest');
+		$requestor->write_dplusfile($data, $this->sessionID);
+		$requestor->cgi_request($config->cgis['default'], $this->sessionID);
+	}
+
+	/**
+	 * Send PO Edit Request
 	 * @param  string $ponbr Purchase Order Number
 	 * @return void
 	 */
 	public function request_po_edit($ponbr) {
-		$config = $this->wire('config');
-		$dplusdb = $this->wire('modules')->get('DplusOnlineDatabase')->db_name;
-		$data = array("DBNAME=$dplusdb", 'EDITPURCHASEORDER', "PONBR=$ponbr");
-		$requestor = $this->wire('modules')->get('DplusRequest');
-		$requestor->write_dplusfile($data, session_id());
-		$requestor->cgi_request($config->cgis['default'], $this->sessionID);
+		$data = array('EDITPURCHASEORDER', "PONBR=$ponbr");
+		$this->request_dplus($data);
 	}
 
 	/**
@@ -412,13 +455,9 @@ class PurchaseOrderEdit extends WireData implements Module {
 	 * @param  string $ponbr   Purchase Order Number
 	 * @return void
 	 */
-	public function request_update_header($ponbr) {
-		$config = $this->wire('config');
-		$dplusdb = $this->wire('modules')->get('DplusOnlineDatabase')->db_name;
-		$data = array("DBNAME=$dplusdb", 'SAVEPURCHASEORDERHEADER', "PONBR=$ponbr");
-		$requestor = $this->wire('modules')->get('DplusRequest');
-		$requestor->write_dplusfile($data, session_id());
-		$requestor->cgi_request($config->cgis['default'], $this->sessionID);
+	private function request_update_header($ponbr) {
+		$data = array('SAVEPURCHASEORDERHEADER', "PONBR=$ponbr");
+		$this->request_dplus($data);
 	}
 
 	/**
@@ -427,13 +466,15 @@ class PurchaseOrderEdit extends WireData implements Module {
 	 * @param  string $vendorID  Vendor ID
 	 * @return void
 	 */
-	public function request_create_po($vendorID) {
+	private function request_create_po($vendorID) {
+		$data = array('CREATERECEIVEPO', "VENDORID=$vendorID");
 		$config = $this->wire('config');
 		$dplusdb = $this->wire('modules')->get('DplusOnlineDatabase')->db_name;
-		$data = array("DBNAME=$dplusdb", 'CREATERECEIVEPO', "VENDORID=$vendorID");
+		$data = array_merge(["DBNAME=$dplusdb"], $data);
 		$requestor = $this->wire('modules')->get('DplusRequest');
-		$requestor->write_dplusfile($data, session_id());
+		$requestor->write_dplusfile($data, $this->sessionID);
 		$requestor->cgi_request($config->cgis['warehouse'], $this->sessionID);
+		return true;
 	}
 
 	/**
@@ -442,13 +483,18 @@ class PurchaseOrderEdit extends WireData implements Module {
 	 * @return void
 	 */
 	public function request_itemsearch($q) {
-		$config = $this->wire('config');
-		$dplusdb = $this->wire('modules')->get('DplusOnlineDatabase')->db_name;
+		$data = array("ITNOSRCH=$q", "CUSTID=$config->default_webcustomer");
+		$this->request_dplus($data);
+	}
 
-		$data = array("DBNAME=$dplusdb", "ITNOSRCH=$q", "CUSTID=$config->default_webcustomer");
-		$requestor = $this->wire('modules')->get('DplusRequest');
-		$requestor->write_dplusfile($data, $this->sessionID);
-		$requestor->cgi_request($config->cgis['default'], $this->sessionID);
+	/**
+	 * Send PO Header Update Request
+	 * @param  string $ponbr Purchase Order Number
+	 * @return void
+	 */
+	private function request_po_exit($ponbr) {
+		$data = array('EXITPURCHASEORDER', "PONBR=$ponbr");
+		$this->request_dplus($data);
 	}
 
 /* =============================================================
@@ -515,13 +561,40 @@ class PurchaseOrderEdit extends WireData implements Module {
 	}
 
 	/**
+	 * Return PO Documents URL
+	 * @param  string $ponbr  Purchase Order Number
+	 * @return string
+	 */
+	public function get_po_delete_itemURL($ponbr, $linenbr = 0) {
+		$url = new Url($this->wire('pages')->get('pw_template=purchase-order-edit')->url);
+		$url->query->set('action', 'delete-item');
+		$url->query->set('ponbr', $ponbr);
+		$url->query->set('linenbr', $linenbr);
+		return $url->getUrl();
+	}
+
+	/**
 	 * Return URL to Create PO for Vendor
 	 * @param  string $vendorID Vendor ID
 	 * @return string
 	 */
-	public function get_po_createURL($vendorID) {
+	public function get_po_createURL($vendorID = '') {
 		$url = new Url($this->wire('pages')->get('pw_template=purchase-order-epo')->url);
-		$url->query->set('ponbr', 'new');
+		if ($vendorID) {
+			$url->query->set('action', 'create-po');
+			$url->query->set('vendorID', $vendorID);
+		}
+		return $url->getUrl();
+	}
+
+	/**
+	 * Return URL to Create PO for Vendor
+	 * @param  string $vendorID Vendor ID
+	 * @return string
+	 */
+	public function get_po_createdURL($vendorID) {
+		$url = new Url($this->wire('pages')->get('pw_template=purchase-order-epo')->url);
+		$url->query->set('action', 'verify-po-created');
 		$url->query->set('vendorID', $vendorID);
 		return $url->getUrl();
 	}
@@ -573,8 +646,8 @@ class PurchaseOrderEdit extends WireData implements Module {
 	 * @return bool
 	 */
 	public function exists($ponbr) {
-		$validator = $this->wire('modules')->get('ValidatePurchaseOrderNbr');
-		return $validator->validate($ponbr);
+		$validator = new MpoValidator();
+		return $validator->po($ponbr);
 	}
 
 	/**
@@ -643,6 +716,10 @@ class PurchaseOrderEdit extends WireData implements Module {
 		return $q->findOneBySessionid($this->sessionID);
 	}
 
+	public function itmitem($itemID) {
+		return ItemMasterItemQuery::create()->findOneByItemid($itemID);
+	}
+
 	/**
 	 * Return if Field has Error
 	 * NOTE: Uses $session->response_epo->fields to derive this
@@ -669,6 +746,7 @@ class PurchaseOrderEdit extends WireData implements Module {
 				$event->return = $this->wire('pages')->get("pw_template=$pwtemplate")->url;
 			});
 		}
+
 		$this->addHookProperty('Page(pw_template=purchase-order-edit)::ponbr', function($event) {
 			$p = $event->object;
 			$event->return = $this->get_po_editURL($p->fullURL->query->get('ponbr'));
@@ -699,6 +777,16 @@ class PurchaseOrderEdit extends WireData implements Module {
 			$event->return = $this->get_po_documentsURL($ponbr);
 		});
 
+		$this->addHook("Page(pw_template=purchase-order-edit)::search_vxmURL", function($event) {
+			$event->return = $this->wire('modules')->get('DpagesApi')->lookupURL('vxm');;
+		});
+
+		$this->addHook('Page(pw_template=purchase-order-edit)::delete_itemURL', function($event) {
+			$ponbr    = $event->arguments(0);
+			$linenbr  = $event->arguments(1);
+			$event->return = $this->get_po_delete_itemURL($ponbr, $linenbr);
+		});
+
 		$this->addHook('Page(pw_template=purchase-order-epo)::choose_vendorURL', function($event) {
 			$p = $event->object;
 			$vendorID = $event->arguments(0);
@@ -707,17 +795,13 @@ class PurchaseOrderEdit extends WireData implements Module {
 			$url->query->set('vendorID', $vendorID);
 			$event->return = $url->getUrl();
 		});
-		$this->addHook('Page(pw_template=vi-vendor)::po_createURL', function($event) {
+
+		$this->addHook('Page(pw_template=vi-vendor|purchase-orders)::po_createURL', function($event) {
 			$vendorID = $event->arguments(0);
 			$event->return = $this->get_po_createURL($vendorID);
 		});
 	}
 
-	/**
-	 * ProcessWire Module Info
-	 *
-	 * @return void
-	 */
 	public static function getModuleInfo() {
 		return array(
 			'title' => 'PurchaseOrderEdit',

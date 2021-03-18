@@ -33,7 +33,7 @@ class DpagesMwm extends Dpages implements Module {
 			'paginated' => false
 		),
 		'whse-binr-to' => array(
-			'name'   => 'whse-binr-from',
+			'name'   => 'whse-binr-to',
 			'fields' => array('title'),
 			'paginated' => false
 		),
@@ -91,7 +91,12 @@ class DpagesMwm extends Dpages implements Module {
 			'name'   => 'whse-sales-orders',
 			'fields' => array('title'),
 			'paginated' => false
-		)
+		),
+		'whse-po-amend' => array(
+			'name'   => 'whse-po-amend',
+			'fields' => array('title'),
+			'paginated' => false
+		),
 	);
 
 	const PAGES = array(
@@ -138,15 +143,6 @@ class DpagesMwm extends Dpages implements Module {
 			'dplus_function' => 'pbnrt',
 			'pw_template'    => 'whse-binr-to'
 		),
-		'whse-binr-from' => array(
-			'template'       => 'warehouse-function',
-			'name'           => 'move-from',
-			'title'          => 'Move From',
-			'summary'        => 'Move Single items from the same bin',
-			'parent'         => '/warehouse/binr/',
-			'dplus_function' => 'pbnrf',
-			'pw_template'    => 'whse-binr-from'
-		),
 		'whse-binr-contents' => array(
 			'template'       => 'warehouse-function',
 			'name'           => 'binr-contents',
@@ -162,7 +158,8 @@ class DpagesMwm extends Dpages implements Module {
 			'title'          => 'Bin Inquiry',
 			'summary'        => 'Show Items in a bin',
 			'parent'         => '/warehouse/binr/',
-			'dplus_function' => 'pbini',
+			'dplus_function' => '',
+			'dplus_permission' => '',
 			'pw_template'    => 'whse-bin-inquiry'
 		),
 		'menu-inventory' => array(
@@ -226,6 +223,15 @@ class DpagesMwm extends Dpages implements Module {
 			'parent'         => '/warehouse/inventory/',
 			'dplus_function' => 'er',
 			'pw_template'    => 'whse-receiving'
+		),
+		'whse-po-amend' => array(
+			'template'       => 'dplus-function',
+			'name'           => 'po-amend',
+			'title'          => 'Purchase Order Amend',
+			'summary'        => 'Add / Edit PO Items',
+			'parent'         => '/warehouse/inventory/',
+			'dplus_function' => '', // TODO: poa
+			'pw_template'    => 'whse-po-amend'
 		),
 		'menu-pick' => array(
 			'template'       => 'warehouse-menu',
@@ -301,7 +307,7 @@ class DpagesMwm extends Dpages implements Module {
 	}
 
 	public function init_picking() {
-		$this->addHook('Page::get_finishitemURL', function($event) {
+		$this->addHook('Page(pw_template=whse-picking)::get_finishitemURL', function($event) {
 			$p = $event->object;
 			$url = new Url($p->parent('template=warehouse-menu')->child('template=redir')->url);
 			$url->query->set('action','finish-item');
@@ -313,36 +319,19 @@ class DpagesMwm extends Dpages implements Module {
 			$event->return = $url->getUrl();
 		});
 
-		$this->addHook('Page::get_skipitemURL', function($event) {
+		$this->addHook('Page(pw_template=whse-picking)::get_exitorderURL', function($event) {
 			$p = $event->object;
-			$url = new Url($p->parent('template=warehouse-menu')->child('template=redir')->url);
-			$url->query->set('action','skip-item');
-			$url->query->set('page', $p->fullURL->getUrl());
-			$event->return = $url->getUrl();
-		});
-
-		$this->addHook('Page::get_exitorderURL', function($event) {
-			$p = $event->object;
-			$url = new Url($p->parent('template=warehouse-menu')->child('template=redir')->url);
+			$url = new Url($this->wire('pages')->get('pw_template=whse-picking')->url);
 			$url->query->set('action','exit-order');
-			$url->query->set('page', $p->fullURL->getUrl());
+			$url->query->set('ordn', $p->fullURL->query->get('ordn'));
 			$event->return = $url->getUrl();
 		});
 
-		$this->addHook('Page::get_finishorderURL', function($event) {
+		$this->addHook('Page(pw_template=whse-picking)::get_finishorderURL', function($event) {
 			$p = $event->object;
-			$url = new Url($p->parent('template=warehouse-menu')->child('template=redir')->url);
+			$url = new Url($this->wire('pages')->get('pw_template=whse-picking')->url);
 			$url->query->set('action','finish-order');
-			$url->query->set('page', $p->fullURL->getUrl());
-			$event->return = $url->getUrl();
-		});
-
-		$this->addHook('Page::get_selectlineURL', function($event) {
-			$p = $event->object;
-			$item = $event->arguments(0); // Instance of PickSalesOrderDetail
-			$url = new Url($p->fullURL->getUrl());
-			$url->query->set('linenbr', $item->linenbr);
-			$url->query->set('sublinenbr', $item->sublinenbr);
+			$url->query->set('ordn', $p->fullURL->query->get('ordn'));
 			$event->return = $url->getUrl();
 		});
 

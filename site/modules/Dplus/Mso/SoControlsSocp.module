@@ -67,7 +67,7 @@ class SoControlsSocp extends WireData implements Module {
 			'version' => 101,
 			'summary' => 'Handles CRUD Sales Order User Edit Permissions',
 			'singular' => true,
-			'autoload' => true,
+			'autoload' => false,
 		);
 	}
 }

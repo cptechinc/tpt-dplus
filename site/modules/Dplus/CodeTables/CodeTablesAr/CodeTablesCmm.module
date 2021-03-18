@@ -84,7 +84,7 @@ class CodeTablesCmm extends WireData implements Module {
 	 * @return void
 	 */
 	public function process_input(WireInput $input) {
-        $rm = strtolower($input->requestMethod());
+		$rm = strtolower($input->requestMethod());
 		$table = $input->$rm->text('table');
 		$code  = $input->$rm->text('code');
 
