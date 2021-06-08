@@ -1,14 +1,8 @@
 <?php namespace ProcessWire;
 
 use Purl\Url;
-use DocumentFoldersQuery, DocumentFolders;
-use DocumentsQuery, Documents;
-use SalesOrderQuery, SalesOrder;
-use SalesOrderDetailQuery, SalesOrderDetail;
-use SalesHistoryQuery, SalesHistory;
-use SalesHistoryDetailQuery, SalesHistoryDetail;
-
-include_once(__DIR__.'/DocumentManagement.module');
+use DocumentFolderQuery, DocumentFolder;
+use DocumentQuery, Document;
 
 /**
  * Document Management Quotes
@@ -23,9 +17,9 @@ class DocumentManagementQt extends DocumentManagement implements Module {
 	 * @return Documents[]|ObjectCollection
 	 */
 	public function get_documents($qnbr) {
-		$docs_query = DocumentsQuery::create();
+		$docs_query = DocumentQuery::create();
 		$docs_query->filterByTag(self::TAG_QUOTE);
-		$docs_query->filterByReference1($qnbr);
+		$docs_query->filterByReference1($this->qnbr($qnbr));
 		return $docs_query->find();
 	}
 
@@ -36,10 +30,14 @@ class DocumentManagementQt extends DocumentManagement implements Module {
 	 * @return int          Number of Sales Order Documents found
 	 */
 	public function count_documents($qnbr) {
-		$docs_query = DocumentsQuery::create();
+		$docs_query = DocumentQuery::create();
 		$docs_query->filterByTag(self::TAG_QUOTE);
-		$docs_query->filterByReference1($qnbr);
+		$docs_query->filterByReference1($this->qnbr($qnbr));
 		return $docs_query->count();
+	}
+
+	public function qnbr($qnbr) {
+		return substr($qnbr, -4);
 	}
 
 /* =============================================================

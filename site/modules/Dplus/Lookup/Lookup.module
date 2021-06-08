@@ -1,5 +1,7 @@
 <?php namespace ProcessWire;
 
+include_once(__DIR__.'/vendor/autoload.php');
+
 /**
  * Lookup
  *
@@ -30,20 +32,10 @@ class Lookup extends WireData implements Module {
 			'singular' => true,
 			'autoload' => true,
 			'installs' => array(
-				'LookupCustomer',
 				'LookupItem',
-				'LookupSalesOrder',
-				'LookupVendor',
 				'LookupQuote',
-				'LookupWarehouse',
-				'ValidatePurchaseOrderNbr',
-				'ValidateSalesOrder',
-				'ValidateVendorId',
-				'ValidateAr',
-				'ValidateAp',
-				'ValidateItm',
-				'ValidatePo',
-				'ValidateCxm'
+				'ValidateCxm',
+				'ValidateUpcx',
 			)
 		);
 	}

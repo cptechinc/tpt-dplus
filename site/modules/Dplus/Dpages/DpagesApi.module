@@ -9,53 +9,51 @@ use Purl\Url;
  * api Pages will provide api functionality to the site if not available through other means
  */
 class DpagesApi extends Dpages implements Module {
-	const FIELDS = array();
+	const FIELDS = [];
 
 	const TEMPLATES = array(
-		'api-menu' => array(
-			'name'   => 'api-menu',
-			'fields' => array('dplus_function', 'summary'),
-			'paginated' => false
-		),
-		'api-json' => array(
-			'name'   => 'api-json',
-			'fields' => array('dplus_function', 'pw_template', 'summary'),
+		'ajax-lookups' => array(
+			'name'   => 'ajax-lookups',
+			'fields' => array(),
 			'paginated' => true
 		),
-		'api-ajax' => array(
-			'name'   => 'api-ajax',
-			'fields' => array('dplus_function', 'pw_template', 'summary'),
+		'ajax-json' => array(
+			'name'   => 'ajax-json',
+			'fields' => array(),
 			'paginated' => true
 		),
 	);
 
 	const PAGES = array(
-		'api' => array(
-			'template'       => 'api-menu',
-			'name'           => 'api',
-			'title'          => 'API Menu',
-			'summary'        => 'API Menu',
-			'parent'         => '/',
-			'dplus_function' => ''
+		'ajax' => array(
+			'template'       => 'ajax-lookups',
+			'name'           => 'ajax',
+			'title'          => 'AJAX Lookups',
+			'summary'        => 'AJAX Lookups',
+			'parent'         => '/'
 		),
-		'menu-lookup' => array(
-			'template'       => 'api-menu',
-			'name'           => 'lookup',
-			'title'          => 'API Lookup Menu',
-			'summary'        => 'API Lookup Menu',
-			'parent'         => '/api/',
-			'dplus_function' => ''
-		),
-		'lookup-country-codes' => array(
-			'template'       => 'api-ajax',
-			'name'           => 'country-codes',
-			'title'          => 'Lookup Country Codes',
-			'summary'        => 'Lookup Country Codes',
-			'parent'         => '/api/lookup/',
-			'dplus_function' => '',
-			'pw_template'    => 'lookup-country-codes'
+		'ajax-json' => array(
+			'template'       => 'ajax-json',
+			'name'           => 'json',
+			'title'          => 'API JSON',
+			'summary'        => 'API JSON',
+			'parent'         => '/ajax/'
 		),
 	);
+
+	public function lookupURL($code) {
+		$url = $this->wire('pages')->get("template=ajax-lookups")->httpUrl;
+		$url .= "$code/";
+		return $url;
+	}
+
+	public function jsonapiURL($api) {
+		$url = $this->wire('pages')->get("template=ajax-json")->httpUrl;
+		if ($api) {
+			$url .= rtrim($api,'/').'/';
+		}
+		return $url;
+	}
 
 	public static function getModuleInfo() {
 		return array(
@@ -66,5 +64,27 @@ class DpagesApi extends Dpages implements Module {
 			'autoload' => true,
 			'requires' => array('DplusPwPages', 'Dpages'),
 		);
+	}
+
+	public function init() {
+		$this->addHook("Page::jsonapiURL", function($event) {
+			$api = $event->arguments(0);
+			$event->return = $this->jsonapiURL($api);
+		});
+
+		$this->addHook("Page::search_lookupURL", function($event) {
+			$ajaxcode = $event->arguments(0);
+			$event->return = $this->lookupURL($ajaxcode);
+		});
+
+		$this->addHook("Page::searchLookupUrl", function($event) {
+			$ajaxcode = $event->arguments(0);
+			$event->return = $this->lookupURL($ajaxcode);
+		});
+
+		$this->addHook("Page::jsonApiUrl", function($event) {
+			$api = $event->arguments(0);
+			$event->return = $this->jsonapiURL($api);
+		});
 	}
 }

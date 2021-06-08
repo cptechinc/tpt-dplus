@@ -14,7 +14,7 @@ class FilterXref extends WireData implements Module {
 				$modules->install($module_name);
 			}
 		}
-		
+
 		/**
 		 * ProcessWire Module Info
 		 *
@@ -28,7 +28,6 @@ class FilterXref extends WireData implements Module {
 				'singular' => true,
 				'autoload' => true,
 				'installs' => array(
-					'FilterItemCxm',
 					'FilterItemVxm',
 					'FilterItemUpc',
 				)

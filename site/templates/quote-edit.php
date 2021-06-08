@@ -4,12 +4,14 @@
 
 	if ($input->get->qnbr) {
 		$qnbr = $input->get->text('qnbr');
-		$module_edit = $modules->get('QuoteEdit');
+		$module_edit = $modules->get('Eqo');
 		$module_edit->set_qnbr($qnbr);
 
 		if (QuoteQuery::create()->filterByQuoteid($qnbr)->count()) {
 			if (!QuothedQuery::create()->filterBySessionidQuote(session_id(), $qnbr)->count()) {
-				$modules->get('DplusRequest')->self_request($page->edit_quoteURL($qnbr));
+				$url = new Purl\Url($page->edit_quoteURL($qnbr));
+				$url->query->set('sessionID', session_id());
+				$modules->get('DplusRequest')->self_request($url->getUrl());
 			}
 			$page->title = "Editing Quote #$qnbr";
 			$quote_readonly = $module_edit->get_quote_static();
@@ -25,7 +27,6 @@
 
 			//if ($user->is_editingquote($quote_readonly->quotenumber)) {
 				$page->formurl = $pages->get('template=dplus-menu, name=mqo')->child('template=redir')->url;
-				$page->lookupURL = $pages->get('pw_template=ii-item-lookup')->httpUrl;
 				//$page->js .= $config->twig->render('quotes/quote/edit/shiptos.js.twig', ['varshiptos' => $module_edit->get_shiptos_json_array()]);
 
 				$page->body .= $config->twig->render('quotes/quote/edit/edit-form.twig', ['page' => $page, 'quote' => $quote_edit, 'states' => $module_edit->get_states(), 'shipvias' => $module_edit->get_shipvias(), 'warehouses' => $module_edit->get_warehouses(), 'shiptos' => $customer->get_shiptos()]);
@@ -43,8 +44,8 @@
 
 				$page->body .= $config->twig->render('quotes/quote/edit/quote-items.twig', ['page' => $page, 'user' => $user, 'quote' => $quote_edit]);
 				$page->body .= $html->h3('class=text-secondary', 'Add Item');
-				$page->body .= $config->twig->render('quotes/quote/edit/add-item-form.twig', ['page' => $page, 'quote' => $quote_readonly]);
-				$page->js .= $config->twig->render('quotes/quote/edit/item-lookup.js.twig', ['page' => $page, 'quote' => $quote_readonly]);
+				$page->body .= $config->twig->render('quotes/quote/edit/lookup/form.twig', ['page' => $page, 'quote' => $quote_readonly]);
+				$page->js .= $config->twig->render('quotes/quote/edit/lookup/js.twig', ['page' => $page, 'quote' => $quote_readonly]);
 
 				if ($input->get->q) {
 					$q = $input->get->text('q');

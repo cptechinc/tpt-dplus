@@ -8,7 +8,7 @@ $(function() {
 	var input_qty          = form_physcount.find('input[name=qty]');
 
 
-	if (input_item.val().length) {
+	if (input_item.length && input_item.val().length) {
 		if (input_lotserial.val().length) {
 			input_bin.focus();
 		} else if (input_item.data('itemtype') == 'S') {
@@ -30,6 +30,30 @@ $(function() {
 		button.closest('.modal').modal('hide');
 	});
 
+/* =============================================================
+	Lookup Modal Functions
+============================================================= */
+	$('#ajax-modal').on('show.bs.modal', function (event) {
+		var button = $(event.relatedTarget); // Button that triggered the modal
+		var modal = $(this);
+		var url = button.data('lookupurl');
+		modal.attr('data-input', button.data('input'));
+
+		modal.find('.modal-title').text(button.attr('title'));
+		modal.resizeModal('xl');
+		modal.find('.modal-body').loadin(url, function() {});
+	});
+
+	$("body").on("click", "#ajax-modal .item-link", function(e) {
+		e.preventDefault();
+		var button = $(this);
+		var modal  = button.closest('.modal');
+		var itemID = button.data('itemid');
+		var input  = $(modal.attr('data-input'));
+		input.val(itemID);
+		modal.modal('hide');
+	});
+
 	form_physcount.validate({
 		submitHandler : function(form) {
 			var valid_qty     = validate_qty();
@@ -43,8 +67,8 @@ $(function() {
 			}
 
 			if (valid_form.error) {
-				swal({
-					type: 'error',
+				swal2.fire({
+					icon: 'error',
 					title: valid_form.title,
 					text: valid_form.msg,
 					html: valid_form.html
@@ -52,20 +76,17 @@ $(function() {
 			} else {
 				if (input_item.data('itemtype') == 'S' || input_item.data('itemtype') == 'L') {
 					if (input_lotserial.val() == '') {
-						swal({
+						swal2.fire({
 							title: 'Leave lotserial blank?',
 							text: "Lot/Serial will be generated if left blank",
-							type: 'warning',
+							icon: 'warning',
 							showCancelButton: true,
-							confirmButtonClass: 'btn btn-success',
-							cancelButtonClass: 'btn btn-danger',
-							buttonsStyling: false,
 							confirmButtonText: 'Continue'
 						}).then(function (result) {
-							if (result) {
+							if (result.value) {
 								form.submit();
 							}
-						}).catch(swal.noop);
+						});
 					} else {
 						form.submit();
 					}

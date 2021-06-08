@@ -1,70 +1,35 @@
 <?php
-	$module_ii = $modules->get('DpagesMii');
-	$module_ii->init_iipage();
-	$html = $modules->get('HtmlWriter');
-	$lookup_ii = $modules->get('LookupItemIi');
+	include_once($modules->get('Mvc')->controllersPath().'vendor/autoload.php');
+	use Controllers\Mii\Ii;
+	Ii::init();
 
-	if ($input->get->itemID) {
-		$itemID = $input->get->text('itemID');
+	$routes = [
+		['GET',  '', Ii::class, 'item'],
+		['GET',  'page{nbr:\d+}/', Ii::class, 'item'],
+		['GET',  'stock', Ii::class, 'stock'],
+		['GET',  'requirements', Ii::class, 'requirements'],
+		['GET',  'pricing', Ii::class, 'pricing'],
+		['GET',  'usage', Ii::class, 'usage'],
+		['GET',  'costing', Ii::class, 'costing'],
+		['GET',  'activity', Ii::class, 'activity'],
+		['GET',  'kit', Ii::class, 'kit'],
+		['GET',  'bom', Ii::class, 'bom'],
+		['GET',  'where-used', Ii::class, 'whereUsed'],
+		['GET',  'lotserial', Ii::class, 'lotserial'],
+		['GET',  'general', Ii::class, 'general'],
+		['GET',  'substitutes', Ii::class, 'substitutes'],
+		['GET',  'documents', Ii::class, 'documents'],
+		['GET',  'sales-orders', Ii::class, 'salesOrders'],
+		['GET',  'sales-history', Ii::class, 'salesHistory'],
+		['GET',  'quotes', Ii::class, 'quotes'],
+		['GET',  'purchase-orders', Ii::class, 'purchaseOrders'],
+		['GET',  'purchase-history', Ii::class, 'purchaseHistory'],
+	];
 
-		if ($lookup_ii->lookup_itm($itemID)) {
-			$page->headline = "II: $itemID";
-			$item = ItemMasterItemQuery::create()->findOneByItemid($itemID);
-			$itempricing = ItemPricingQuery::create()->findOneByItemid($itemID);
-			$module_json = $modules->get('JsonDataFiles');
-			$json = $module_json->get_file(session_id(), 'ii-stock');
-			$documentmanagement = $modules->get('DocumentManagement');
-
-			$toolbar = $config->twig->render('items/ii/toolbar.twig', ['page' => $page, 'item' => $item]);
-			$links = $config->twig->render('items/ii/item/ii-links.twig', ['page' => $page, 'itemID' => $itemID, 'lastmodified' => $module_json->file_modified(session_id(), 'ii-stock'), 'refreshurl' => $page->get_itemURL($itemID)]);
-			$description = $config->twig->render('items/ii/item/description.twig', ['item' => $item, 'page' => $page]);
-			$itemdata = $config->twig->render('items/ii/item/item-data.twig', ['page' => $page, 'item' => $item, 'itempricing' => $itempricing]);
-
-			if ($module_json->file_exists(session_id(), 'ii-stock')) {
-				$session->itemtry = 0;
-
-				if ($json['error']) {
-					$stock .= $config->twig->render('util/alert.twig', ['type' => 'danger', 'title' => 'Error!', 'iconclass' => 'fa fa-warning fa-2x', 'message' => $json['errormsg']]);
-				} else {
-					$module_formatter = $modules->get('SfIiStockItem');
-					$module_formatter->init_formatter();
-					$stock = $config->twig->render('items/ii/item/stock.twig', ['page' => $page, 'itemID' => $itemID, 'json' => $json, 'module_formatter' => $module_formatter, 'blueprint' => $module_formatter->get_tableblueprint()]);
-				}
-			} else {
-				if ($session->itemtry > 3) {
-					$stock = $config->twig->render('util/alert.twig', ['type' => 'danger', 'title' => "JSON Decode Error", 'iconclass' => 'fa fa-warning fa-2x', 'message' => $module_json->get_error()]);
-				} else {
-					$session->itemtry++;
-					$session->redirect($page->get_itemURL($itemID));
-				}
-			}
-			$page->body = "<div class='row'>";
-				$page->body .= $html->div('class=col-sm-2 pl-0', $toolbar);
-				$page->body .= $html->div('class=col-sm-10', $links.$description.$itemdata.$stock);
-			$page->body .= "</div>";
-		} else {
-			$page->headline = $page->title = "Item $itemID could not be found";
-			$page->body = $config->twig->render('util/error-page.twig', ['title' => $page->title, 'msg' => "Check if the item ID is correct"]);
-		}
-	} else {
-		$q = $input->get->q ? $input->get->text('q') : '';
-		$page->title = $q ? "II: results for '$q'" : $page->title;
-		$pricingm = $modules->get('ItemPricing');
-
-		if ($lookup_ii->lookup(strtoupper($q))) {
-			$session->redirect($page->get_itemURL($lookup_ii->itemID));
-		} else {
-			$filter_itm = $modules->get('FilterItemMaster');
-			$filter_itm->init_query($user);
-			$filter_itm->filter_search($q);
-			$query = $filter_itm->get_query();
-			$items = $query->paginate($input->pageNum, 10);
-			$pricingm->request_multiple(array_keys($items->toArray(ItemMasterItem::get_aliasproperty('itemid'))));
-		}
-
-		$page->searchURL = $page->url;
-		$page->body .= $config->twig->render('items/item-search.twig', ['page' => $page, 'items' => $items, 'pricing' => $pricingm]);
-		$page->body .= $config->twig->render('util/paginator.twig', ['page' => $page, 'resultscount'=> $items->getNbResults()]);
-	}
+	$router = new Mvc\Router();
+	$router->setRoutes($routes);
+	$router->setRoutePrefix($page->url);
+	$page->body = $router->route();
+	$page->show_breadcrumbs = false;
 
 	include __DIR__ . "/basic-page.php";

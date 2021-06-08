@@ -5,14 +5,39 @@
 	po                     EditPoHead
 	epo                    PurchaseOrderEdit
 #}
-<h4 class="font-weight-bold text-secondary">Pay-To Contact</h4>
+<h4 class="font-weight-bold text-secondary">Contact</h4>
 <div class="form-group">
 	<div class="row">
 		<div class="col-sm-4">
 			<label for="contact">Contact</label>
 		</div>
 		<div class="col-sm-8">
-			<input type="text" class="form-control form-control-sm" name="contact" id="contact" value="{{ po.contact }}">
+			{% include 'util/bootstrap/form/input-group.twig' with {
+					'inputgroup': {
+						'type': 'prepend',
+						'size': 'sm',
+						'input': {
+							'name': 'contact',
+							'value': po.contact,
+							'attributes': {
+								'placeholder': 'Contact',
+								'aria-label':  'Contact',
+							}
+						},
+						'button': {
+							'colorclass': 'btn-secondary',
+							'text': 'fa fa-search'|icon,
+							'attributes': {
+								'title': 'Search Vendor Contacts',
+								'data-toggle': 'modal',
+								'data-target': '#ajax-modal',
+								'data-lookupurl': page.search_lookupURL('vendor/contacts/'),
+								'data-search': 'vendor-contacts'
+							}
+						}
+					}
+				}
+			%}
 		</div>
 	</div>
 </div>

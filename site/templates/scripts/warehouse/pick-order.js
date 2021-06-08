@@ -3,6 +3,7 @@ $(function() {
 	var input_barcode = $('input[name=barcode]');
 	var input_qty     = $('input[name=qty]');
 	var form_barcode  = $('form[id=barcode-form]');
+	var modal_ajax = $('#ajax-modal');
 
 	/**
 	 * The Order of Functions based on Order of Events
@@ -18,7 +19,50 @@ $(function() {
 
 /////////////////////////////////////
 // 2. Change Bin / Change Pallet
+//
 ////////////////////////////////////
+
+/* =============================================================
+	Lookup Modal Functions
+============================================================= */
+	modal_ajax.on('show.bs.modal', function (event) {
+		var button = $(event.relatedTarget); // Button that triggered the modal
+		var modal = $(this);
+		var url = button.data('lookupurl');
+
+		modal.attr('data-input', button.data('input'));
+		modal.find('.modal-title').text(button.attr('title'));
+		modal.resizeModal('xl');
+		modal.find('.modal-body').loadin(url, function() {});
+	});
+
+	$("body").on('click', '.item-link', function(e) {
+		e.preventDefault();
+		var button = $(this);
+		var itemID = button.data('itemid');
+		var modal = button.closest('.modal');
+
+		$(modal.attr('data-input')).val(itemID);
+		modal.modal('hide');
+	});
+
+	$("body").on('submit', '#ajax-modal form', function(e) {
+		e.preventDefault();
+		var form = $(this);
+		var query = form.serialize();
+		var action = form.attr('action');
+		var search = form.find('input[name=q]').val();
+		var url = action + '?' + query;
+		form.closest('.modal').find('.modal-title').text('Searching for ' + search);
+		form.closest('.modal').find('.modal-body').loadin(url, function() {});
+	});
+
+	$("body").on('click', '#ajax-modal .paginator-link', function(e) {
+		e.preventDefault();
+		var href = $(this).attr('href');
+		modal_ajax.find('.modal-body').load(href);
+	});
+
 	$("body").on("change", ".change-pallet", function(e) {
 		e.preventDefault();
 		var select = $(this);
@@ -31,20 +75,17 @@ $(function() {
 		var button = $(this);
 
 		if (pickitem.item.qty.remaining > 0 && pickitem.item.qty.total_picked > 0) {
-			swal({
+			swal2.fire({
 				title: 'Are you sure?',
 				text: "You are trying to leave this bin without fulfilling bin item",
-				type: 'warning',
+				icon: 'warning',
 				showCancelButton: true,
-				confirmButtonClass: 'btn btn-success',
-				cancelButtonClass: 'btn btn-danger',
-				buttonsStyling: false,
 				confirmButtonText: 'Yes!'
 			}).then(function (result) {
-				if (result) {
+				if (result.value) {
 					swal_changebin();
 				}
-			}).catch(swal.noop);
+			});
 		} else {
 			swal_changebin();
 		}
@@ -96,8 +137,6 @@ $(function() {
 		button.closest('.modal').modal('hide');
 	});
 
-
-
 /////////////////////////////////////
 // 3. Finish Item / Exit Order
 ////////////////////////////////////
@@ -106,29 +145,24 @@ $(function() {
 		var button = $(this);
 
 		if (pickitem.item.qty.remaining < 0) {
-			swal({
+			swal2.fire({
 				title: 'Are you sure?',
 				text: "You have picked too much",
-				type: 'warning',
-				confirmButtonClass: 'btn btn-success',
-				buttonsStyling: false,
+				icon: 'warning',
 				confirmButtonText: 'Continue'
 			});
 		} else if (pickitem.item.qty.remaining > 0) {
-			swal({
+			swal2.fire({
 				title: 'Are you sure?',
 				text: "You have not met the Quantity Requirements",
-				type: 'warning',
+				icon: 'warning',
 				showCancelButton: true,
-				confirmButtonClass: 'btn btn-success',
-				cancelButtonClass: 'btn btn-danger',
-				buttonsStyling: false,
 				confirmButtonText: 'Yes!'
 			}).then(function (result) {
-				if (result) {
+				if (result.value) {
 					window.location.href = button.attr('href');
 				}
-			}).catch(swal.noop);
+			});
 		} else {
 			window.location.href = button.attr('href');
 		}
@@ -138,20 +172,17 @@ $(function() {
 		e.preventDefault();
 		var button = $(this);
 
-		swal({
+		swal2.fire({
 			title: 'Are you sure?',
 			text: "You are trying to leave this order",
-			type: 'warning',
+			icon: 'warning',
 			showCancelButton: true,
-			confirmButtonClass: 'btn btn-success',
-			cancelButtonClass: 'btn btn-danger',
-			buttonsStyling: false,
 			confirmButtonText: 'Yes!'
 		}).then(function (result) {
 			if (result) {
 				window.location.href = button.attr('href');
 			}
-		}).catch(swal.noop);
+		});
 	});
 
 	/////////////////////////////////////
@@ -165,7 +196,7 @@ $(function() {
 });
 
 function swal_changebin() {
-	swal({
+	swal2.fire({
 		title: "Enter the Bin you'd like to change to",
 		text: "Bin ID",
 		input: 'text',
@@ -175,16 +206,16 @@ function swal_changebin() {
 				if (value) {
 					resolve();
 				} else {
-					reject('You need to write something!');
+					resolve('You need to write something!');
 				}
 			})
 		}
 	}).then(function (input) {
-		if (input) {
-			var binID = input;
+		if (input.value) {
+			var binID = input.value;
 			var pageurl = URI();
 			var uri = URI(pickitem.url_changebin).addQuery('binID', binID);
 			window.location.href = uri.toString();
 		}
-	}).catch(swal.noop);
+	});
 }

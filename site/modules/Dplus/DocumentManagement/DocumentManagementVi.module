@@ -2,10 +2,8 @@
 
 use Purl\Url;
 
-use DocumentFoldersQuery, DocumentFolders;
-use DocumentsQuery, Documents;
-
-include_once(__DIR__.'/DocumentManagement.module');
+use DocumentFolderQuery, DocumentFolder;
+use DocumentQuery, Document;
 
 /**
  * Document Management VI

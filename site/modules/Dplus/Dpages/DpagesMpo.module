@@ -140,8 +140,8 @@ class DpagesMpo extends Dpages implements Module {
 			'name'             => 'epo',
 			'title'            => 'Purchase Order Entry',
 			'summary'          => 'Edit / Create Purchase Order',
-			'parent'           => '/mpo',
-			'dplus_function'   => '',
+			'parent'           => '/mpo/',
+			'dplus_function'   => 'epo',
 			'dplus_permission' => 'epo',
 			'pw_template'      => 'purchase-order-epo'
 		),
@@ -408,6 +408,10 @@ class DpagesMpo extends Dpages implements Module {
 		$this->addHook('Page(pw_template=purchase-order-view)::po_editURL', function($event) {
 			$ponbr = $event->arguments(0);
 			$event->return = $this->get_po_editURL($ponbr);
+		});
+
+		$this->addHook('Page(pw_template=purchase-orders)::search_vendorsURL', function($event) {
+			$event->return = $this->wire('pages')->get('pw_template=vi-search')->httpUrl;
 		});
 	}
 }

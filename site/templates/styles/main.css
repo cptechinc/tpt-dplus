@@ -21,6 +21,12 @@ table.table-md td, table.table-md th {
 	padding: .5rem;
 }
 
+@media (min-width:1400px) {
+	.container {
+		max-width:1366px;
+	}
+}
+
 /**************************************
 	Bootstrap Styles
 **************************************/
@@ -69,6 +75,10 @@ table.table-md td, table.table-md th {
 
 .table-smd td {
 	padding: .45rem;
+}
+
+.page-item.disabled .page-link {
+	background-color: #e9ecef;
 }
 
 /*==============================================================
@@ -189,6 +199,16 @@ a.image-link:hover {
 	z-index: 1500;
 }
 
+.paginator .dropdown-menu {
+	max-height: 200px;
+	overflow-y:auto;
+}
+
+.table-striped.blue-stripes tbody tr:nth-of-type(2n+1) {
+	background-color: rgba(176, 198, 206, .5);
+	background-color: rgba(56, 163, 162, .15);
+}
+
 
 /************************************** Navbar **************************************/
 #yt-menu {
@@ -246,23 +266,89 @@ a.image-link:hover {
 /*==============================================================
 	FORM Styles
 ==============================================================*/
-
-select.form-control.is-valid, select.form-control.is-invalid  {
+select.form-control.is-invalid, select.form-control.is-valid {
 	background-position: center right calc(.375em + .9875rem);
+}
+input.form-control.is-valid.text-right,
+input.form-control.is-invalid.text-right {
+	background-position: center left calc(.25em + .25rem);
+	padding-right: .375em;
 }
 
 /* Chrome, Safari, Edge, Opera */
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
+	-webkit-appearance: none;
+	margin: 0;
 }
 
 /* Firefox */
 input.form-control[type=number] {
-  -moz-appearance: textfield;
+	-moz-appearance: textfield;
 }
 
 textarea.qnotes {
 	font-family: monospace;
+}
+
+.input-group > .input-group-append.w25 {
+	flex: 0 0 25%;
+}
+
+.input-group .input-group-text {
+	width: 100%;
+}
+
+.screen-overlay {
+	height: 100%;
+	z-index: 30;
+	position: fixed;
+	top: 0;
+	left: 0;
+	opacity:0;
+	visibility:hidden;
+	background-color: rgba(34, 34, 34, 0.6);
+	transition:opacity .2s linear, visibility .1s, width 1s ease-in;
+}
+.screen-overlay.show {
+	transition:opacity .5s ease, width 0s;
+	opacity:1;
+	width:100%;
+	visibility:visible;
+}
+
+.offcanvas {
+	width:400px;
+	visibility: hidden;
+	transform:translateX(-100%);
+	transition:all .2s;
+	border-radius:0;
+	box-shadow: 0 5px 10px rgba(0,0,0, .2);
+	display:block;
+	position: fixed;
+	top: 0;
+	left: 0;
+	height: 100%;
+	z-index: 1200;
+	background-color: #fff;
+	overflow-y: scroll;
+	overflow-x: hidden;
+}
+
+.offcanvas.show {
+	visibility: visible;
+	transform: translateX(0);
+	transition: transform .2s;
+}
+
+.offcanvas .nav-actions {
+	position: fixed;
+	bottom: 1rem;
+}
+
+/*==============================================================
+	Bootstrap Card Styles
+==============================================================*/
+.card .card-toolbar {
+	background-color: rgba(56, 163, 162, .45);
 }

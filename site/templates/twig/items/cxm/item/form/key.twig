@@ -8,47 +8,73 @@
 	item                   ItemXrefCustomer
 	item.item              ItemMasterItem
 #}
-{% if item.isNew() and page.has('custID') == false %}
-	<div class="row form-group">
-		<div class="col-sm-4">
-			<label for="custID">Customer ID</label>
-		</div>
-		<div class="col-sm-8">
-			{% include 'util/form/input-with-modal-lookup.twig' with {'name': 'custID', value: item.custID, 'modaltarget': '#ajax-modal', 'modaldescription': 'Search for / Choose Customer', attributes_button: {'data-search': 'customer'}} %}
-		</div>
+<div class="row form-group {{ item.isNew() == false and page.pw_template == 'cxm' ? 'collapse' : ''}}">
+	<div class="col-sm-4">
+		<label for="custID">Customer ID</label>
 	</div>
-{% else %}
-	<input type="hidden" name="custID" value="{{ item.custid }}">
+	<div class="col-sm-8">
+		{% include 'util/bootstrap/form/input-group.twig' with {
+				'inputgroup': {
+					'type': 'prepend',
+					'input': {
+						'name': 'custID',
+						'id': 'custID',
+						'value': item.custid,
+						'attributes': {
+							'placeholder': '',
+							'aria-label':  'Customer ID',
+							'readonly': item.isNew() ? false : true
+						}
+					},
+					'button': {
+						'colorclass': 'btn-secondary',
+						'text': 'fa fa-search'|icon,
+						'attributes': {
+							'title': 'Search Customers',
+							'data-toggle': 'modal',
+							'data-target': '#ajax-modal',
+							'data-lookupurl': page.search_lookupURL('customers'),
+							'data-input': '#custID'
+						}
+					}
+				}
+			}
+		%}
+		<small class="form-text text-muted customer-name">{{ item.customer.name }}</small>
+	</div>
+</div>
 
-	{% if (page.pw_template == 'itm-xrefs-cxm') %}
-		<div class="row form-group">
-			<div class="col-sm-4">
-				<label for="custID">Customer ID</label>
-			</div>
-			<div class="col-sm-8">
-				<p class="form-control-plaintext">{{ item.custid }} - {{ item.customer.name }}</p>
-			</div>
-		</div>
-	{% endif %}
-{% endif %}
+
 <div class="row form-group">
 	<div class="col-sm-4">
 		<label for="custitemID">Customer Item ID</label>
 	</div>
 	<div class="col-sm-8">
-		{% if item.isNew() %}
-			<input type="text" name="custitemID" class="form-control form-control-sm" id="custitemID" value="{{ item.custitemID }}" data-custitemid="{{ item.custitemID }}">
-		{% else %}
-			<input type="text" name="custitemID" class="form-control-plaintext form-control-sm" id="custitemID" value="{{ item.custitemID }}" data-custitemid="{{ item.custitemID }}" readonly>
-		{% endif %}
+		{% include 'util/form/input.twig' with {
+				'name': 'custitemID', 'value': item.custitemID,
+				'attributes': {
+					'data-custitemid': item.custitemID,
+					'maxlength': cxm.maxlength_custitemid(),
+					'readonly': item.custitemid ? true : false,
+					'tabindex': item.custitemid ? '-1' : '',
+				}
+			}
+		%}
 	</div>
 </div>
 <div class="row form-group">
-	<div class="col-sm-4">
+	<div class="col-sm-1"></div>
+	<div class="col-sm-3">
 		<label for="description">Description</label>
 	</div>
 	<div class="col-sm-8">
-		<input type="text" name="description" class="form-control form-control-sm" id="description" value="{{ item.description }}">
+		{% include 'util/form/input.twig' with {
+				'name': 'description', 'value': item.description,
+				'attributes': {
+					'maxlength': cxm.maxlength_description()
+				}
+			}
+		%}
 	</div>
 </div>
 <div class="row form-group">
@@ -56,7 +82,13 @@
 
 	</div>
 	<div class="col-sm-8">
-		<input type="text" name="description2" class="form-control form-control-sm" id="description2" value="{{ item.description2 }}">
+		{% include 'util/form/input.twig' with {
+				'name': 'description2', 'value': item.description2,
+				'attributes': {
+					'maxlength': cxm.maxlength_description2()
+				}
+			}
+		%}
 	</div>
 </div>
 <div class="row form-group">
@@ -64,19 +96,38 @@
 		<label for="itemID">Our Item ID</label>
 	</div>
 	<div class="col-sm-8 item-col">
-		{% if page.pw_template == 'cxm' %}
-			<div class="input-group input-group-sm">
-				<span class="input-group-prepend">
-					<button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#ajax-modal" title="Search for / Choose Item" aria-label="Search for / Choose Item" data-search="item">
-						<span class="fa fa-search" aria-hidden="true"></span> <span class="sr-only">Search for / Choose Item</span>
-					</button>
-				</span>
-				<input type="text" class="form-control" name="itemID" id="itemID" value="{{ item.itemid }}">
-			</div>
-		{% else %}
-			<input type="text" class="form-control-plaintext" name="itemID" id="itemID" value="{{ item.itemid }}" readonly>
-		{% endif %}
-
+		{% include 'util/bootstrap/form/input-group.twig' with {
+				'inputgroup': {
+					'type': 'prepend',
+					'attributes': {
+						'readonly': page.pw_template == 'itm'
+					},
+					'input': {
+						'name': 'itemID',
+						'id': 'itemID',
+						'value': item.itemid,
+						'attributes': {
+							'placeholder': '',
+							'aria-label':  'Item ID'
+						}
+					},
+					'button': {
+						'colorclass': 'btn-secondary',
+						'text': 'fa fa-search'|icon,
+						'attributes': {
+							'itemid':     item.itemid,
+							'qtypercase': item.qty_percase,
+							'title': 'Search Items',
+							'data-toggle': 'modal',
+							'data-target': '#ajax-modal',
+							'data-lookupurl': page.search_lookupURL('items'),
+							'data-input': '#itemID'
+						}
+					}
+				}
+			}
+		%}
 		<small class="form-text text-muted description">{{ item.item.description }}</small>
+		<small class="form-text text-muted description2">{{ item.item.description2 }}</small>
 	</div>
 </div>

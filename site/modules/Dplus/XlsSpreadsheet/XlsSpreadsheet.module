@@ -14,6 +14,7 @@ use PhpOffice\PhpSpreadsheet\Style\Alignment;
  * @property XlsWriter $writer FileWriter
  */
 class XlsSpreadsheet extends WireData implements Module {
+
 	protected $filename = 'spreadsheet';
 
 /* =============================================================

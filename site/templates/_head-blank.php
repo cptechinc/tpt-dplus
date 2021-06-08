@@ -12,5 +12,4 @@
 			<link rel="stylesheet" type="text/css" href="<?= $css; ?>" />
 		<?php endforeach; ?>
 	</head>
-
 	<body class="fuelux">
