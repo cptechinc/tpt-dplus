@@ -8,6 +8,7 @@ use LabelPrintSessionQuery, LabelPrintSession;
 use WhsesessionQuery, Whsesession;
 
 include(__DIR__.'/PrintLabelResponse.php');
+include_once(__DIR__.'/PrintLabelItem.module');
 
 class PrintLabelItemReceiving extends PrintLabelItem implements Module {
 
