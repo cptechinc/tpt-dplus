@@ -36,7 +36,7 @@ class Lookup extends AbstractController {
 		$filter = $wire->wire('modules')->get('FilterInvTariffCodes');
 		$filter->init_query();
 		$page->headline = "Tariff Codes";
-		self::moduleFilterResults($filter, $wire, $data);
+		return self::moduleFilterResults($filter, $data);
 	}
 
 	/**
@@ -52,7 +52,7 @@ class Lookup extends AbstractController {
 		$filter = $wire->wire('modules')->get('FilterInvMsdsCodes');
 		$filter->init_query();
 		$page->headline = "Msds Codes";
-		self::moduleFilterResults($filter, $wire, $data);
+		return self::moduleFilterResults($filter, $data);
 	}
 
 	/**
@@ -68,7 +68,7 @@ class Lookup extends AbstractController {
 		$filter = $wire->wire('modules')->get('FilterMsoFreightCodes');
 		$filter->init_query();
 		$page->headline = "Freight Codes";
-		self::moduleFilterResults($filter, $wire, $data);
+		return self::moduleFilterResults($filter, $data);
 	}
 
 	/**
@@ -84,7 +84,7 @@ class Lookup extends AbstractController {
 		$page = $wire->wire('page');
 		$filter = new VxmFilter();
 		$page->headline = "VXM";
-		self::filterResults($filter, $wire, $data);
+		return self::filterResults($filter, $wire, $data);
 	}
 
 	/**
@@ -100,7 +100,7 @@ class Lookup extends AbstractController {
 		$filter = $wire->wire('modules')->get('FilterWarehouses');
 		$filter->init_query();
 		$page->headline = "Warehouses";
-		self::moduleFilterResults($filter, $wire, $data);
+		return self::moduleFilterResults($filter, $data);
 	}
 
 	/**
@@ -116,7 +116,7 @@ class Lookup extends AbstractController {
 		$filter = $wire->wire('modules')->get('FilterDplusUsers');
 		$filter->init_query();
 		$page->headline = "Users";
-		self::moduleFilterResults($filter, $wire, $data);
+		return self::moduleFilterResults($filter, $data);
 	}
 
 	/**
@@ -132,7 +132,7 @@ class Lookup extends AbstractController {
 		$filter = new VendorFilter();
 		$filter->init();
 		$page->headline = "Vendors";
-		self::filterResults($filter, $data);
+		return self::filterResults($filter, $data);
 	}
 
 	/**
@@ -149,7 +149,7 @@ class Lookup extends AbstractController {
 		$filter = new PhoneBookFilter();
 		$filter->init();
 		$page->headline = "Vendor Contacts";
-		self::filterResults($filter, $data);
+		return self::filterResults($filter, $data);
 	}
 
 	/**
@@ -165,7 +165,7 @@ class Lookup extends AbstractController {
 		$filter = new ItemGroupFilter();
 		$filter->init();
 		$page->headline = "Item Groups";
-		self::filterResults($filter, $data);
+		return self::filterResults($filter, $data);
 	}
 
 	/**
@@ -175,12 +175,11 @@ class Lookup extends AbstractController {
 	 * @return void
 	 */
 	public static function itmItems($data) {
-		$data = self::sanitizeParameters($data, self::FIELDS_LOOKUP);
-		$wire = self::pw();
-		$filter = $wire->wire('modules')->get('FilterItemMaster');
+		self::sanitizeParameters($data, self::FIELDS_LOOKUP);
+		$filter = self::pw('modules')->get('FilterItemMaster');
 		$filter->init_query();
-		$wire->wire('page')->headline = "Item Master";
-		self::moduleFilterResults($filter, $wire, $data);
+		self::pw('page')->headline = "Item Master";
+		return self::moduleFilterResults($filter, $data);
 	}
 
 	/**
@@ -196,7 +195,7 @@ class Lookup extends AbstractController {
 		$filter->init();
 		$wire->wire('page')->headline = "Purchase Orders";
 		self::pw('config')->po = self::pw('modules')->get('ConfigurePo')->config();
-		self::filterResults($filter, $data);
+		return self::filterResults($filter, $data);
 	}
 
 	/**
@@ -211,7 +210,7 @@ class Lookup extends AbstractController {
 		$filter = new GlCodeFilter();
 		$filter->init();
 		$wire->wire('page')->headline = "General Ledger Codes";
-		self::filterResults($filter, $data);
+		return self::filterResults($filter, $data);
 	}
 
 	/**
@@ -232,7 +231,7 @@ class Lookup extends AbstractController {
 			$filter->search($data->q);
 			$page->headline = "Searching for $data->q";
 		}
-		self::filterResults($filter, $wire, $data);
+		return self::filterResults($filter, $wire, $data);
 	}
 
 	/**
@@ -252,13 +251,13 @@ class Lookup extends AbstractController {
 			$filter->search($data->q);
 			$page->headline = "Searching for $data->q";
 		}
-		self::filterResults($filter, $wire, $data);
+		return self::filterResults($filter, $wire, $data);
 	}
 
-	private static function moduleFilterResults(Module $filter, ProcessWire $wire, $data) {
-		$input = $wire->wire('input');
-		$page = $wire->wire('page');
-		$filter->filter_input($wire->wire('input'));
+	private static function moduleFilterResults(Module $filter, $data) {
+		$input = self::pw('input');
+		$page  = self::pw('page');
+		$filter->filter_input(self::pw('input'));
 
 		if ($data->q) {
 			$filter->search($data->q);
@@ -266,7 +265,7 @@ class Lookup extends AbstractController {
 		}
 		$filter->apply_sortby($page);
 		$path = $input->urlSegment(count($input->urlSegments()));
-		self::filterResultsTwig($path, $filter->get_query(), $data->q);
+		return self::filterResultsTwig($path, $filter->get_query(), $data->q);
 	}
 
 	private static function filterResults(Filter $filter, $data) {
@@ -282,15 +281,17 @@ class Lookup extends AbstractController {
 		$path = $input->urlSegment(count($input->urlSegments()));
 		$path = rtrim(str_replace($page->url, '', self::pw('input')->url()), '/');
 		$path = preg_replace('/page\d+/', '', $path);
-		self::filterResultsTwig($path, $filter->query, $data->q);
+		return self::filterResultsTwig($path, $filter->query, $data->q);
 	}
 
 	private static function filterResultsTwig($path = 'codes', BaseQuery $query, $q = '') {
 		$input = self::pw('input');
 		$page  = self::pw('page');
 		$results = $query->paginate($input->pageNum, 10);
-		$page->body .= self::pw('config')->twig->render("api/lookup/$path/search.twig", ['results' => $results, 'datamatcher' => self::pw('modules')->get('RegexData'), 'q' => $q]);
-		$page->body .= '<div class="mb-3"></div>';
-		$page->body .= self::pw('config')->twig->render('util/paginator.twig', ['resultscount'=> $results->getNbResults() != $query->count() ? $query->count() : $results->getNbResults()]);
+		$html = '';
+		$html .= self::pw('config')->twig->render("api/lookup/$path/search.twig", ['results' => $results, 'datamatcher' => self::pw('modules')->get('RegexData'), 'q' => $q]);
+		$html .= '<div class="mb-3"></div>';
+		$html .= self::pw('config')->twig->render('util/paginator/propel.twig', ['pager' => $results]);
+		return $html;
 	}
 }
