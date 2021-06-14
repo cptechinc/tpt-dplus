@@ -1,4 +1,7 @@
 <form action="{{ page.searchURL }}" method="get" class="allow-enterkey-submit" id="item-search-form">
+	{% if page.wire('input').get.offsetExists('fororder') %}
+		<input type="hidden" name="fororder" value="true">
+	{% endif %}
 	<div class="input-group form-group">
 		<input class="form-control form-group inline" type="text" name="q" value="" placeholder="Search Item ID, Description">
 		<span class="input-group-btn">
