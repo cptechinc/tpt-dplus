@@ -1,6 +1,7 @@
 <?php namespace Dplus\Filters\Min;
 // Dplus Model
 use ItemMasterItemQuery, ItemMasterItem as Model;
+use WarehouseInventoryQuery, WarehouseInventory;
 // ProcessWire Classes
 use ProcessWire\WireData, ProcessWire\WireInput, ProcessWire\Page;
 // Dplus Filters
@@ -22,6 +23,22 @@ class ItemMaster extends AbstractFilter {
 			Model::aliasproperty('description2'),
 		];
 		$this->query->search_filter($columns, strtoupper($q));
+	}
+
+/* =============================================================
+	Base Filter Functions
+============================================================= */
+	public function active($whseID = '') {
+		if (empty($whseID)) {
+			$whseID = $this->wire('user')->whseid;
+		}
+		$q = WarehouseInventoryQuery::create();
+		$q->select(WarehouseInventory::aliasproperty('itemid'));
+		$q->filterByStatus(WarehouseInventory::STATUS_ACTIVE);
+		$q->filterByWarehouseid($whseID);
+		$itemids = $q->find()->toArray();
+		$this->query->filterByItemid($itemids);
+		echo 'FILTERTING ACTIVE';
 	}
 
 /* =============================================================
