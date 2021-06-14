@@ -7,7 +7,6 @@ namespace Composer\Autoload;
 class ComposerStaticInit0137f8e60248be1bc1b37e9c1c6812dd
 {
     public static $classMap = array (
-        'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
         'Controllers\\Ajax\\Json\\ItemLookup' => __DIR__ . '/../..' . '/classes/ajax/json/ItemLookup.php',
         'Controllers\\Ajax\\Json\\Map' => __DIR__ . '/../..' . '/classes/ajax/json/Map.php',
         'Controllers\\Ajax\\Json\\Mar' => __DIR__ . '/../..' . '/classes/ajax/json/Mar.php',
@@ -20,6 +19,9 @@ class ComposerStaticInit0137f8e60248be1bc1b37e9c1c6812dd
         'Controllers\\Ajax\\Json\\Mso' => __DIR__ . '/../..' . '/classes/ajax/json/Mso.php',
         'Controllers\\Ajax\\Json\\Wm\\Receiving' => __DIR__ . '/../..' . '/classes/ajax/json/Wm/Receiving.php',
         'Controllers\\Ajax\\Lookup' => __DIR__ . '/../..' . '/classes/ajax/Lookup.php',
+        'Controllers\\Ajax\\Lookup\\Base' => __DIR__ . '/../..' . '/classes/ajax/Lookup/Base.php',
+        'Controllers\\Ajax\\Lookup\\Lookup' => __DIR__ . '/../..' . '/classes/ajax/Lookup/Lookup.php',
+        'Controllers\\Ajax\\Lookup\\Min' => __DIR__ . '/../..' . '/classes/ajax/Lookup/Min.php',
         'Controllers\\Dplus\\Dashboard' => __DIR__ . '/../..' . '/classes/dplus/Dashboard.php',
         'Controllers\\Dplus\\Dashboard\\Common' => __DIR__ . '/../..' . '/classes/dplus/Dashboard/Common.php',
         'Controllers\\Dplus\\Dashboard\\Slsmgr' => __DIR__ . '/../..' . '/classes/dplus/Dashboard/Slsmgr.php',

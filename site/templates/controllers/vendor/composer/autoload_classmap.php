@@ -6,7 +6,6 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
-    'Composer\\InstalledVersions' => $vendorDir . '/composer/InstalledVersions.php',
     'Controllers\\Ajax\\Json\\ItemLookup' => $baseDir . '/classes/ajax/json/ItemLookup.php',
     'Controllers\\Ajax\\Json\\Map' => $baseDir . '/classes/ajax/json/Map.php',
     'Controllers\\Ajax\\Json\\Mar' => $baseDir . '/classes/ajax/json/Mar.php',
@@ -19,6 +18,9 @@ return array(
     'Controllers\\Ajax\\Json\\Mso' => $baseDir . '/classes/ajax/json/Mso.php',
     'Controllers\\Ajax\\Json\\Wm\\Receiving' => $baseDir . '/classes/ajax/json/Wm/Receiving.php',
     'Controllers\\Ajax\\Lookup' => $baseDir . '/classes/ajax/Lookup.php',
+    'Controllers\\Ajax\\Lookup\\Base' => $baseDir . '/classes/ajax/Lookup/Base.php',
+    'Controllers\\Ajax\\Lookup\\Lookup' => $baseDir . '/classes/ajax/Lookup/Lookup.php',
+    'Controllers\\Ajax\\Lookup\\Min' => $baseDir . '/classes/ajax/Lookup/Min.php',
     'Controllers\\Dplus\\Dashboard' => $baseDir . '/classes/dplus/Dashboard.php',
     'Controllers\\Dplus\\Dashboard\\Common' => $baseDir . '/classes/dplus/Dashboard/Common.php',
     'Controllers\\Dplus\\Dashboard\\Slsmgr' => $baseDir . '/classes/dplus/Dashboard/Slsmgr.php',
