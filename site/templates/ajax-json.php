@@ -26,7 +26,10 @@
 			['GET', 'tariff-code/', Json\Min::class, 'getTariffCode'],
 			['GET', 'country-code/', Json\Min::class, 'getCountryCode'],
 			['GET', 'msds-code/', Json\Min::class, 'getMsdsCode'],
-			['GET', 'item/', Json\Min::class, 'getItm'],
+			'item' => [
+				['GET', '', Json\Min::class, 'getItm'],
+				['GET', 'available/', Json\Min::class, 'getItemAvailable'],
+			],
 		],
 		'map' => [
 			'validate' => [
