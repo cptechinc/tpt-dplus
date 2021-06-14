@@ -144,6 +144,26 @@ class Min extends AbstractController {
 		return $loader->get_item_array($data->itemID, $fields);
 	}
 
+	public static function getItemAvailable($data) {
+		self::sanitizeParametersShort($data, ['itemID|text']);
+		$validate = self::validator();
+
+		if ($validate->itemid($data->itemID) === false) {
+			return false;
+		}
+		$m = self::pw('modules')->get('ItemPricing');
+		$m->request_search($data->itemID);
+		if ($m->has_pricing($data->itemID) === false) {
+			return false;
+		}
+		$pricing = $m->get_pricing($data->itemID);
+		$response = [
+			'itemid' => $data->itemID,
+			'qty'    => $pricing->qty
+		];
+		return $response;
+	}
+
 	public static function validateInvGroupCode($data) {
 		$fields = ['code|text'];
 		$data = self::sanitizeParametersShort($data, $fields);
