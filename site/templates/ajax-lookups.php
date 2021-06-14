@@ -1,6 +1,7 @@
 <?php
 	include($modules->get('Mvc')->controllersPath().'vendor/autoload.php');
 	use Controllers\Ajax\Lookup as AjaxLookup;
+	use Controllers\Ajax\Lookup\Min as LookupsMin;
 
 	$page->searchURL = $input->url();
 	$routes = [
@@ -9,8 +10,8 @@
 		['GET', 'tariff-codes/', AjaxLookup::class, 'tariffCodes'],
 		['GET', 'tariff-codes/page{d:\d+}/', AjaxLookup::class, 'tariffCodes'],
 		// Itm
-		['GET', 'items', AjaxLookup::class, 'itmItems'],
-		['GET', 'items/page{nbr:\d+}/', AjaxLookup::class, 'itmItems'],
+		['GET', 'items', LookupsMin::class, 'items'],
+		['GET', 'items/page{nbr:\d+}/', LookupsMin::class, 'items'],
 		// Msds Codes
 		['GET', 'msds-codes/', AjaxLookup::class, 'msdsCodes'],
 		['GET', 'msds-codes/page{nbr:\d+}/', AjaxLookup::class, 'msdsCodes'],
@@ -52,11 +53,7 @@
 	$router = new Mvc\Router();
 	$router->setRoutes($routes);
 	$router->setRoutePrefix($page->url);
-	$response = $router->route();
-
-	if ($router->hasError()) {
-		$page->body = $response;
-	}
+	$page->body = $router->route();
 
 	if ($config->ajax) {
 		echo $page->body;
