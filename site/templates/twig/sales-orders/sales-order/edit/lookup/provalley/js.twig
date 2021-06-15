@@ -121,11 +121,12 @@ $(function() {
 				var url = input_itemid.closest('.input-group').find('button').data('lookupurl');
 				url = URI(url);
 				url.addQuery('q', q);
-				var modal_ajax = $('#ajax-modal');
-				modal_ajax.find('.modal-title').text('Searching for ' + q);
-				modal_ajax.resizeModal('xl');
-				modal_ajax.modal('show');
-				modal_ajax.find('.modal-body').loadin(url.toString(), function() {});
+				var modal = $('#ajax-modal');
+				modal.find('.modal-title').text('Searching for ' + q);
+				modal.resizeModal('xl');
+				modal.modal('show');
+				modal.attr('data-input', input_itemid.closest('.input-group').find('button').data('input'));
+				modal.find('.modal-body').loadin(url.toString(), function() {});
 			} else {
 				swal_notfound();
 			}
