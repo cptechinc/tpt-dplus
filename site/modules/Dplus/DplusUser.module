@@ -154,6 +154,7 @@ class DplusUser extends WireData implements Module {
 		$user->company   = $logmuser->company;
 		$user->email     = $logmuser->email;
 		$user->whseid    = $syslogin->whseid;
+		$user->showActiveItemsOnly = $syslogin->showActiveItemsOnly();
 
 		$function = "setup_user_$role";
 
