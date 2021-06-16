@@ -31,9 +31,13 @@ class Min extends Base {
 	private static function filterItemsAndDisplay(Filter $filter, $data) {
 		self::filter($filter, $data);
 
+		if ($data->fororder === true && self::pw('user')->showActiveItemsOnly) {
+			$filter->active();
+		}
+
 		$results = $filter->query->paginate(self::pw('input')->pageNum, 10);
 		$itemids = array_column($results->toArray(), 'Inititemnbr');
-
+		
 		if ($data->fororder === true) {
 			self::pw('modules')->get('ItemPricing')->request_multiple($itemids);
 		}
