@@ -32,13 +32,11 @@ class ItemMaster extends AbstractFilter {
 		if (empty($whseID)) {
 			$whseID = $this->wire('user')->whseid;
 		}
-		$q = WarehouseInventoryQuery::create();
-		$q->select(WarehouseInventory::aliasproperty('itemid'));
-		$q->filterByStatus(WarehouseInventory::STATUS_ACTIVE);
-		$q->filterByWarehouseid($whseID);
-		$itemids = $q->find()->toArray();
-		$this->query->filterByItemid($itemids);
-		echo 'FILTERTING ACTIVE';
+		$this->query
+		->useWarehouseInventoryQuery()
+			->filterByWarehouseid($whseID)
+			->filterByStatus(WarehouseInventory::STATUS_ACTIVE)
+		->endUse();
 	}
 
 /* =============================================================
