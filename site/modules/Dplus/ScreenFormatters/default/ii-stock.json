@@ -80,7 +80,7 @@
 				"data-justify": "right",
                 "label-justify": "right"
             },
-            "On Hand-Boxes": {
+            "Boxes": {
                 "line": 1,
                 "column": 8,
     			"col-length": 1,
