@@ -13,6 +13,7 @@ use Dplus\Filters\Min\ItemMaster  as ItemMasterFilter;
 // Mvc Controllers
 use Mvc\Controllers\AbstractController;
 use Controllers\Mii\IiFunction;
+use Controllers\Mii\Ii;
 
 class Item extends IiFunction {
 	const SECTIONS = [
@@ -42,6 +43,7 @@ class Item extends IiFunction {
 		if (empty($data->itemID) === false) {
 			if ($data->refresh) {
 				self::requestIiItem($data->itemID);
+				sleep(2);
 				self::pw('session')->redirect(self::itemUrl($data->itemID), $http301 = false);
 			}
 			return self::item($data);
@@ -131,7 +133,7 @@ class Item extends IiFunction {
 			$data->q = strtoupper($data->q);
 
 			if ($filter->exists($data->q)) {
-				self::pw('session')->redirect($page->url."?itemID=$data->q", $http301 = false);
+				self::pw('session')->redirect(Ii::iiUrl($data->q), $http301 = false);
 			}
 
 			$filter->search($data->q);
