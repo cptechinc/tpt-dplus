@@ -45,11 +45,11 @@ class Cio extends WireData implements Module {
 		'ci-payments'      => 'payments',
 		'ci-credit'        => 'credit',
 		'ci-standing-orders' => 'standingorders',
-		'ci-stock'           => '',
+		'ci-stock'           => 'stock',
 		'ci-notes'           => 'notes',
 		'ci-documents'       => '',
 		'ci-customer-phonebook' => '',
-		'ci-activity'         => ''
+		'ci-activity'         => 'activity'
 	];
 
 /* =============================================================
