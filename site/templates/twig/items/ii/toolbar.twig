@@ -2,10 +2,10 @@
 
 <nav class="toolbar-sidebar">
 	<ul class="nav">
-		{% for function, title in page.subfunctions() if iio.allowUser(user, function|replace({'-': ''})) %}
+		{% for path, data in page.subfunctions() if iio.allowUser(user, data.permission) %}
 			<li>
-				<a href="{{ page.subfunctionURL(item.itemid, function) }}">
-					{{ title }}
+				<a href="{{ page.subfunctionURL(item.itemid, path) }}">
+					{{ data.title }}
 				</a>
 			</li>
 		{% endfor %}
