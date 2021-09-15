@@ -65,7 +65,7 @@
 				</div>
 			</div>
 			<div class="col-sm-2 text-right">
-				$ <span class="total-price">{{ detail.totalprice|number_format(cart.decimal_places_price) }}</span>
+				$ <span class="total-price">{{ (detail.price * detail.qty)|number_format(cart.decimal_places_price) }}</span>
 			</div>
 			<div class="col-sm-3 text-right">
 				<button type="submit" class="btn btn-sm btn-success">
