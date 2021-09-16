@@ -31,7 +31,7 @@ class Ii extends AbstractController {
 		'activity'         => ['title' => 'Activity', 'permission' => 'activity'],
 		'kit'              => ['title' => 'Kit', 'permission' => 'kit'],
 		'bom'              => ['title' => 'BoM', 'permission' => 'kit'],
-		'where-used'       => ['title' => 'Where Used', 'permission' => 'where'],
+		// 'where-used'       => ['title' => 'Where Used', 'permission' => 'where'],
 		'lotserial'        => ['title' => 'Lot / Serial', 'permission' => 'lotserial'],
 		'general'          => ['title' => 'General', 'permission' => 'general'],
 		'substitutes'      => ['title' => 'Substitutes', 'permission' => 'substitutes'],
