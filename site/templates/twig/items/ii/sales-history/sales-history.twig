@@ -7,7 +7,7 @@
 				</h4>
 			</div>
 			<div class="col-sm-6 form-group">
-				<button class="btn btn-outline-primary" type="button" data-toggle="collapse" data-target="#{{ id|attrJS }} .lotserial" aria-expanded="false" aria-controls=".lotserial">
+				<button class="btn btn-outline-primary toggle-collapse" type="button" data-target="#{{ id|attrJS }} .lotserial" aria-expanded="false" aria-controls=".lotserial">
 					Show / Hide Lot/Serials
 				</button>
 			</div>
@@ -70,7 +70,7 @@
 
 						{% if invoice['lots']|length > 0 %}
 							{% for x in 1..blueprint['lotserial']['rowcount']  %}
-								<tr class="lotserial lotserial-{{ invoice['Invoice Number'] }} collapse show">
+								<tr class="lotserial lotserial-{{ invoice['Invoice Number'] }} collapse">
 									{% set columncount = 0 %}
 									{% for i in 1..blueprint['cols'] + 1 %}
 										{% set colspan = 0 %}
@@ -93,7 +93,7 @@
 
 							{% for key, lot in invoice['lots'] %}
 								{% for x in 1..blueprint['lotserial']['rowcount']  %}
-									<tr class="lotserial lotserial-{{ invoice['Invoice Number'] }} {{ id == 'TOTAL' ? 'bg-secondary text-white' : '' }} collapse show">
+									<tr class="lotserial lotserial-{{ invoice['Invoice Number'] }} {{ id == 'TOTAL' ? 'bg-secondary text-white' : '' }} collapse">
 										{% set columncount = 0 %}
 										{% for i in 1..blueprint['cols'] + 1 %}
 											{% set colspan = 0 %}
