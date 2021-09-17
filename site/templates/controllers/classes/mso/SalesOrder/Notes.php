@@ -18,7 +18,13 @@ class Notes extends Base {
 		return self::so($data);
 	}
 
-	public static function so($data) {
+	public static function handleCRUD($data) {
+		$qnotes = self::pw('modules')->get('QnotesSalesOrder');
+		$qnotes->process_input(self::pw('input'));
+		self::pw('session')->redirect(self::orderNotesUrl($data->ordn), $http301 = false);
+	}
+
+	private static function so($data) {
 		$data = self::sanitizeParametersShort($data, ['ordn|ordn']);
 		$page = self::pw('page');
 		$config   = self::pw('config');
@@ -38,7 +44,7 @@ class Notes extends Base {
 		}
 	}
 
-	public static function notes($data) {
+	private static function notes($data) {
 		$data = self::sanitizeParametersShort($data, ['ordn|ordn']);
 		$page = self::pw('page');
 		$config   = self::pw('config');
