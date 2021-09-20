@@ -46,6 +46,16 @@ abstract class Base extends AbstractController {
 		return $html;
 	}
 
+	protected static function breadCrumbs() {
+		return self::pw('config')->twig->render('sales-orders/bread-crumbs.twig');
+	}
+
+	protected static function lookupScreen($data) {
+		$html  = self::breadCrumbs();
+		$html .= self::lookupForm($data);
+		return $html;
+	}
+
 /* =============================================================
 	URLs
 ============================================================= */

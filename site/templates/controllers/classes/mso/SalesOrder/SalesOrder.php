@@ -34,6 +34,8 @@ class SalesOrder extends Base {
 		if (empty($data->ordn) === false) {
 			return self::so($data);
 		}
+		self::pw('page')->show_breadcrumbs = false;
+		return self::lookupScreen($data);
 	}
 
 	public static function so($data) {
