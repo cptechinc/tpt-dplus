@@ -5,10 +5,12 @@
 	$query->filterByCustid($custID);
 
 	$page->show_breadcrumbs = false;
+	$shipto = new WireData();
 
 	if ($input->get->text('shiptoID')) {
 		$shiptoID = $input->get->text('shiptoID');
 		$query->filterByShiptoid($shiptoID);
+		$shipto = CustomerShiptoQuery::create()->filterByCustid($custID)->filterByShiptoid($shiptoID)->findOne();
 	}
 
 	$contactID = $input->get->text('contactID');
