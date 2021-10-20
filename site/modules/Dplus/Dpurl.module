@@ -9,7 +9,7 @@ class Dpurl extends WireData implements Module {
 		$path = rtrim($path, '/').'/';
 
 		if (strpos($path, 'page') !== false) {
-			$regex = "((page)\d{1,3})";
+			$regex = "((page)\d{1,8})";
 			$replace = ($pagenbr > 1) ? "page".$pagenbr : "";
 			$path  = preg_replace($regex, $replace, $path);
 		} else {
@@ -20,6 +20,15 @@ class Dpurl extends WireData implements Module {
 		}
 		$url->path = $path;
 		return $url;
+	}
+
+	public function paginateSimple(Url $url, $pagenbr = 1) {
+		$path = $url->getPath();
+		$path = rtrim($path, '/').'/';
+		$segments = $url->path->getData();
+		$segment = $segments[count($segments) - 1];
+
+		return $this->paginate($url, $segment, $pagenbr);
 	}
 
 	public static function getModuleInfo() {

@@ -38,7 +38,7 @@ class Twig extends WireData implements Module {
 	}
 
 	public function setupTwigGlobals(Environment $twig) {
-		foreach (['page', 'pages', 'config', 'user', 'languages', 'sanitizer', 'session', 'browseragent'] as $variable) {
+		foreach (['page', 'pages', 'config', 'user', 'languages', 'sanitizer', 'session', 'browseragent', 'input'] as $variable) {
 			$twig->addGlobal($variable, $this->wire($variable));
 		};
 		$twig->addGlobal('homepage', $this->wire('pages')->get('/'));
@@ -238,7 +238,7 @@ class Twig extends WireData implements Module {
 			return $input;
 		});
 		$twig->addFunction($function);
-		
+
 		$function = new TwigFunction('twigdatepicker', function (array $array) {
 			$input = new TwigDatePicker();
 			$input->setFromArray($array);

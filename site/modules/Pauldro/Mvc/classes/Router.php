@@ -73,7 +73,11 @@ class Router extends WireData {
 		$input = $this->wire('input');
 		$dispatcher = $this->dispatcher();
 		$this->routeInfo  = $dispatcher->dispatch($input->requestMethod(), $input->url());
-		$response = '';
+		$params = $this->routeInfo[2];
+
+		if (array_key_exists('pagenbr', $params)) {
+			$input->setPageNum(intval($params['pagenbr']));
+		}
 
 		try {
 			$response = $this->handle($this->routeInfo);

@@ -2,10 +2,10 @@
 	include_once($modules->get('Mvc')->controllersPath().'vendor/autoload.php');
 	use Controllers\Mii\Ii;
 	Ii::init();
-
+	
 	$routes = [
 		['GET',  '', Ii::class, 'item'],
-		['GET',  'page{nbr:\d+}/', Ii::class, 'item'],
+		['GET',  'page{pagenbr:\d+}/', Ii::class, 'item'],
 		['GET',  'stock', Ii::class, 'stock'],
 		['GET',  'requirements', Ii::class, 'requirements'],
 		['GET',  'pricing', Ii::class, 'pricing'],

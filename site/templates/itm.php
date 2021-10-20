@@ -10,7 +10,7 @@
 
 	$routes = [
 		['GET',  '', ItmController::class, 'item'],
-		['GET',  'page{d:\d+}', ItmController::class, 'itemList'],
+		['GET',  'page{pagenbr:\d+}', ItmController::class, 'itemList'],
 		['POST', '', ItmController::class, 'itemHandleCRUD'],
 		'costing' => [
 			['GET',  '', ItmController::class, 'costing'],
@@ -22,7 +22,7 @@
 		],
 		'warehouses' => [
 			['GET',  '', ItmController::class, 'warehouse'],
-			['GET',  'page{d:\d+}', ItmController::class, 'warehouseList'],
+			['GET',  'page{pagenbr:\d+}', ItmController::class, 'warehouseList'],
 			['POST', '', ItmController::class, 'warehouseHandleCRUD'],
 		],
 		'misc' => [
