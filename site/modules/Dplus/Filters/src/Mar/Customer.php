@@ -1,4 +1,5 @@
 <?php namespace Dplus\Filters\Mar;
+use Propel\Runtime\ActiveQuery\Criteria;
 // Dplus Model
 use CustomerQuery, Customer as Model;
 // ProcessWire Classes
