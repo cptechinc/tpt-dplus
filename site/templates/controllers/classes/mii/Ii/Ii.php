@@ -160,7 +160,8 @@ class Ii extends AbstractController {
 		$m->addHook('Page(pw_template=ii-item)::subfunctionTitle', function($event) {
 			$title = $event->arguments(0);
 			if (array_key_exists($event->arguments(0), self::SUBFUNCTIONS)) {
-				$title = self::SUBFUNCTIONS[$event->arguments(0)];
+				$func = self::SUBFUNCTIONS[$event->arguments(0)];
+				$title = $func['title'];
 			}
 			$event->return = $title;
 		});
