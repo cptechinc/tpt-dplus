@@ -8,8 +8,8 @@
 		<a href="{{ page.itemUrl(input.get.text('itemID')) }}">{{ input.get.text('itemID') }}</a>
 	</li>
 	{% set segments = input.urlSegments() %}
-	{% if segments|length == 1 %}
 
+	{% if segments|length == 1 %}
 		{% if segments[1] == 'pricing' and input.get.offsetExists('custID') %}
 			<li class="breadcrumb-item">
 				<a href="{{ page.subfunctionURL(input.get.text('itemID'), 'pricing') }}">
