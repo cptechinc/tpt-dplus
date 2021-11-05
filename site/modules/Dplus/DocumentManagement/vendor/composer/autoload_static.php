@@ -14,6 +14,8 @@ class ComposerStaticInitfdd038617226e94faa44d44a195565f1
         'Dplus\\DocManagement\\Finders\\Qt' => __DIR__ . '/../..' . '/src/finder/sub/Qt.php',
         'Dplus\\DocManagement\\Finders\\SalesOrder' => __DIR__ . '/../..' . '/src/finder/sub/SalesOrder.php',
         'Dplus\\DocManagement\\Mover' => __DIR__ . '/../..' . '/src/Mover.php',
+        'Dplus\\DocManagement\\Viewer' => __DIR__ . '/../..' . '/src/viewer/Viewer.php',
+        'Dplus\\DocManagement\\Viewer\\Config' => __DIR__ . '/../..' . '/src/viewer/Config.php',
     );
 
     public static function getInitializer(ClassLoader $loader)
