@@ -4,15 +4,28 @@
 	</div>
 	<div class="col-sm-10">
 		{% include 'items/ii/item/ii-links.twig' with {'itemID': item.itemid, 'lastmodified': page.lastmodified, 'refreshurl': page.itemURL(item.itemid)} %}
-		{% if docm.getViewer().exists(docm.getImageName(item.itemid)) %}
+
+		{% if page.wire('modules').get('ItmImages').useExternal %}
+			{% set images = page.wire('modules').get('ItmImages').getImageSourcer() %}
 			<div class="row mb-3">
 				<div class="col-sm-3">
-					<a href="{{ docm.getViewer().url(docm.getImageName(item.itemid)) }}" target="_blank">
-						<img src="{{ docm.getViewer().url(docm.getImageName(item.itemid)) }}" class="img-thumbnail" alt="">
+					<a href="{{ images.imageUrl(item.itemid) }}" target="_blank">
+						<img src="{{ images.imageUrl(item.itemid) }}" class="img-thumbnail" alt="">
 					</a>
 				</div>
 			</div>
+		{% else %}
+			{% if docm.getViewer().exists(docm.getImageName(item.itemid)) %}
+				<div class="row mb-3">
+					<div class="col-sm-3">
+						<a href="{{ docm.getViewer().url(docm.getImageName(item.itemid)) }}" target="_blank">
+							<img src="{{ docm.getViewer().url(docm.getImageName(item.itemid)) }}" class="img-thumbnail" alt="">
+						</a>
+					</div>
+				</div>
+			{% endif %}
 		{% endif %}
+
 		{{ html.item|raw }}
 		{# include 'items/ii/item/item-data.twig' #}
 		{{ html.stock|raw }}
