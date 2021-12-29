@@ -12,6 +12,7 @@ site/config.php
 test.php
 .env
 site/modules/Dplus/ItmImages/vendor
+site/modules/Dplus/Connections/vendor
 
 # Twig Cache
 site/templates/twig/cache/
