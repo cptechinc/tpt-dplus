@@ -1,0 +1,11 @@
+{
+	"autoload": {
+		"psr-4": {
+			"Dplus\\Urls\\ItmImages\\": "src/"
+		}
+	},
+	"require": {
+		"vlucas/phpdotenv": "^5.4",
+		"automattic/woocommerce": "dev-master"
+	}
+}
