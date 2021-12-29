@@ -10,6 +10,8 @@ site/modules/ProcessExportProfile
 site/config.php
 /vendor
 test.php
+.env
+site/modules/Dplus/ItmImages/vendor
 
 # Twig Cache
 site/templates/twig/cache/
@@ -32,6 +34,3 @@ _compareTemp
 dwsync.xml
 dw_php_codehinting.config
 *.mno
-
-
-
