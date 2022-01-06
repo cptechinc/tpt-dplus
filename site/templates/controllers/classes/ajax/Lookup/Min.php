@@ -36,9 +36,9 @@ class Min extends Base {
 		}
 
 		$results = $filter->query->paginate(self::pw('input')->pageNum, 10);
-		$itemids = array_column($results->toArray(), 'Inititemnbr');
-		
+
 		if ($data->fororder === true) {
+			$itemids = array_column($results->toArray(), 'Inititemnbr');
 			self::pw('modules')->get('ItemPricing')->request_multiple($itemids);
 		}
 		return self::displayResults(self::getResultsPathSegment(), $results, $data->q);

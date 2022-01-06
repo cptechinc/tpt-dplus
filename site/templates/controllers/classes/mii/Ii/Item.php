@@ -129,6 +129,10 @@ class Item extends IiFunction {
 		$filter = new ItemMasterFilter();
 		$filter->sortby($page);
 
+		if (self::pw('user')->showActiveItemsOnly) {
+			$filter->active();
+		}
+
 		if ($data->q) {
 			$data->q = strtoupper($data->q);
 
@@ -141,6 +145,7 @@ class Item extends IiFunction {
 		}
 		$config = self::pw('config');
 		$items = $filter->query->paginate(self::pw('input')->pageNum, 10);
+		
 		$pricingM->request_multiple(array_keys($items->toArray(ItemMasterItem::get_aliasproperty('itemid'))));
 
 		$page->searchURL = $page->url;

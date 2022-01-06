@@ -1,4 +1,7 @@
 <?php
+	// Propel Classes
+	use Propel\Runtime\ActiveQuery\Criteria;
+	
 	$html = $modules->get('HtmlWriter');
 
 	$query = CustomerQuery::create();
