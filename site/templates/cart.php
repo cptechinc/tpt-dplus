@@ -10,6 +10,16 @@ if ($values->action) {
 	$session->redirect($page->redirectURL(), $http301 = false);
 }
 
+if ($input->get->custID) {
+	$custID = $input->get->text('custID');
+	$cart->set_custid($custID);
+	if ($input->get->shiptoID) {
+		$shiptoID = $input->get->text('shiptoID');
+		$cart->set_shiptoID($shiptoID);
+	}
+	$session->redirect($page->url);
+}
+
 if ($cart->has_custid()) {
 	$custID = $cart->get_custid();
 	$customer = CustomerQuery::create()->findOneByCustid($custID);
@@ -59,14 +69,6 @@ if ($cart->has_custid()) {
 
 	$page->body .= $html->div('class=mb-4', '');
 	$page->body .= $config->twig->render('cart/cart-actions.twig', ['page' => $page, 'cart' => $cart, 'user' => $user]);
-} elseif ($input->get->custID) {
-	$custID = $input->get->text('custID');
-	$cart->set_custid($custID);
-	if ($input->get->shiptoID) {
-		$shiptoID = $input->get->text('shiptoID');
-		$cart->set_shiptoID($shiptoID);
-	}
-	$session->redirect($page->url);
 } else {
 	$page->body .= $config->twig->render('cart/form/customer-form.twig', ['page' => $page]);
 	$page->js   .= $config->twig->render('cart/form/js.twig', ['page' => $page]);
