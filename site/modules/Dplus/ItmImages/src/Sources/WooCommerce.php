@@ -1,6 +1,6 @@
 <?php namespace Dplus\Urls\ItmImages\Sources;
 // Dplus Connections
-use Dplus\Connections\Api\WooCommerce;
+use Dplus\Connections\Apis\WooCommerce as WooComm;
 
 /**
  * WooCommerce
@@ -22,7 +22,7 @@ class WooCommerce implements Client {
 	}
 
 	public function __construct() {
-		$this->api = WooCommerce\WooCommerce::client();
+		$this->api = WooComm\WooCommerce::client();
 	}
 
 	/**
@@ -33,10 +33,10 @@ class WooCommerce implements Client {
 	public function imageUrl($id) {
 		switch ($_ENV['SYSOPCODE_MAPS_TO']) {
 			case 'SKU':
-				return $this->api->imageUrlBySku($id);
+				return $this->imageUrlBySku($id);
 				break;
 			default:
-				return $this->api->imageUrlById($id);
+				return $this->imageUrlById($id);
 				break;
 		}
 	}
