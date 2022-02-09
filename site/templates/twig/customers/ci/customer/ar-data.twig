@@ -29,7 +29,7 @@
 					Current Finance Charge:
 				</div>
 				<div class="col-sm-5">
-					{{ customer.taxcode }}
+					{{ customer.taxcode }} - {{ customer.taxcode() }}
 				</div>
 			</div>
 		</li>
@@ -39,7 +39,7 @@
 					Type:
 				</div>
 				<div class="col-sm-5">
-					{{ customer.type }}
+					{{ customer.type }} - {{ customer.type() }}
 				</div>
 			</div>
 		</li>
@@ -49,7 +49,7 @@
 					Terms Code:
 				</div>
 				<div class="col-sm-5">
-					{{ customer.termscode }}
+					{{ customer.termscode }} - {{ customer.termscode() }}
 				</div>
 			</div>
 		</li>
@@ -59,7 +59,7 @@
 					Price Code:
 				</div>
 				<div class="col-sm-5">
-					{{ customer.pricecode }}
+					{{ customer.pricecode }} - {{ customer.pricecode() }}
 				</div>
 			</div>
 		</li>
